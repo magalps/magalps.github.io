@@ -1,12 +1,17 @@
 /* ========== Configurações ========== */
 const GITHUB_USER = 'magalps';
 const REPO = `${GITHUB_USER}.github.io`;
-const ROOT_DIR = 'Projetos'; // pasta raiz dos projetos
-
-/* Filtros disponíveis na UI */
-const INTEREST_TAGS = new Set(['JS','NodeJS','Python','HTML/CSS','PowerBI','SQL','Java']);
+const ROOT_DIR = 'Projetos';
+const API_BASE = `https://api.github.com/repos/${GITHUB_USER}/${REPO}`;
+const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}`;
+const API_HEADERS = { 'Accept': 'application/vnd.github+json' };
+// Opcional: force uma branch específica (ex.: 'main' ou 'master')
+// const BRANCH_OVERRIDE = 'main';
+let DEFAULT_BRANCH = null;
 
 /* ========== Utils ========== */
+const INTEREST_TAGS = new Set(['JS','NodeJS','Python','HTML/CSS','PowerBI','SQL','Java']);
+
 function extToLang(ext){
   switch(ext){
     case 'js': case 'mjs': return 'JS';
@@ -16,7 +21,7 @@ function extToLang(ext){
     case 'sql': case 'psql': case 'pgsql': return 'SQL';
     case 'java': return 'Java';
     case 'pbix': case 'pbit': return 'PowerBI';
-    case 'm': return 'PowerBI';
+    case 'm': return 'PowerBI'; // Power Query M
     default: return null;
   }
 }
@@ -24,16 +29,28 @@ function detectNode(files){ return files.some(p => /(^|\/)package\.json$/i.test(
 function escapeHtml(str){ return (str||'').replace(/[&<>\"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[s])); }
 function afterRoot(path){ return path.replace(new RegExp(`^${ROOT_DIR}/`), ''); }
 function lastSegment(path){ const parts = path.split('/').filter(Boolean); return parts[parts.length-1] || path; }
-function encodePathSegments(relPath){ return relPath.split('/').map(encodeURIComponent).join('/'); }
+function enc(relPath){ return relPath.split('/').map(encodeURIComponent).join('/'); }
+function warn(msg){ console.warn('[portfolio]', msg); }
 
-/* ========== GitHub API ========== */
-async function getRepoTree(){
-  const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO}/git/trees/main?recursive=1`);
-  if(!res.ok) throw new Error('Falha ao obter árvore do repo');
+/* ========== GitHub API helpers ========== */
+async function getDefaultBranch(){
+  if (typeof BRANCH_OVERRIDE !== 'undefined') return BRANCH_OVERRIDE;
+  const res = await fetch(API_BASE, { headers: API_HEADERS });
+  if (!res.ok) { warn('Falha ao obter meta do repo, assumindo main'); return 'main'; }
   const j = await res.json();
-  return Array.isArray(j.tree) ? j.tree : [];
+  return j.default_branch || 'main';
 }
-function findProjectsWithReadme(tree){
+
+async function getRepoTree(branch){
+  const url = `${API_BASE}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
+  const res = await fetch(url, { headers: API_HEADERS });
+  if(!res.ok) throw new Error(`Falha ao obter árvore: ${res.status}`);
+  const j = await res.json();
+  // j.truncated pode ser true em repositórios grandes
+  return { tree: Array.isArray(j.tree) ? j.tree : [], truncated: !!j.truncated };
+}
+
+function findProjectsWithReadmeFromTree(tree){
   const readmeRegex = /\/README(?:\.md)?$/i;
   const readmes = tree.filter(n => n.type === 'blob' && n.path.startsWith(`${ROOT_DIR}/`) && readmeRegex.test(n.path));
   const projects = [];
@@ -46,14 +63,55 @@ function findProjectsWithReadme(tree){
   }
   return projects;
 }
-async function fetchTextRaw(repoPath){
-  const url = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}/main/${encodePathSegments(repoPath)}`;
+
+// Fallback quando a tree vem truncada: usa API /contents recursivamente
+async function findProjectsWithReadmeViaContents(branch){
+  const projects = [];
+  const queue = [`${ROOT_DIR}`];
+  const seenDirs = new Set(queue);
+  let calls = 0, CALL_LIMIT = 200;
+
+  while(queue.length){
+    const dir = queue.shift();
+    const url = `${API_BASE}/contents/${enc(dir)}?ref=${encodeURIComponent(branch)}`;
+    const res = await fetch(url, { headers: API_HEADERS });
+    calls++;
+    if (calls > CALL_LIMIT) { warn('Limite de chamadas atingido na varredura de contents'); break; }
+    if (!res.ok) continue;
+    const list = await res.json();
+    if (!Array.isArray(list)) continue;
+
+    let hasReadme = false;
+    for (const item of list){
+      if (item.type === 'file' && /README(?:\.md)?$/i.test(item.name)) {
+        projects.push({ dir, readmePath: `${dir}/README.md` }); // preferimos .md para fetch RAW
+        hasReadme = true;
+      }
+    }
+    if (!hasReadme){
+      // se não é projeto terminal, desce nos subdirs
+      for (const item of list){
+        if (item.type === 'dir'){
+          const nd = `${dir}/${item.name}`;
+          if (!seenDirs.has(nd)){
+            seenDirs.add(nd);
+            queue.push(nd);
+          }
+        }
+      }
+    }
+  }
+  return projects;
+}
+
+async function fetchRaw(path, branch){
+  const url = `${RAW_BASE}/${encodeURIComponent(branch)}/${enc(path)}`;
   const res = await fetch(url);
   if(!res.ok) return null;
   return await res.text();
 }
 
-/* ========== Parser de README ========== */
+/* ========== README parser ========== */
 function parseReadme(md){
   if(!md) return {};
   const titleMatch = md.match(/^#\s+(.+)$/m);
@@ -100,7 +158,7 @@ function inferTagsForProject(projectDir, tree){
 }
 
 /* ========== Render ========== */
-function renderCard({projectDir, readmeMeta, tags}){
+function renderCard({projectDir, readmeMeta, tags, branch}){
   const name = lastSegment(projectDir);
   const rel = afterRoot(projectDir);
   const grid = document.getElementById('grid'); if(!grid) return;
@@ -128,17 +186,19 @@ function renderCard({projectDir, readmeMeta, tags}){
       <h3>${escapeHtml(readmeMeta.title || name)} ${progressBadge}</h3>
       <p>${escapeHtml(readmeMeta.description || 'Projeto hospedado no GitHub Pages.')}</p>
       <div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
-      <a class="btn small" href="https://${GITHUB_USER}.github.io/${ROOT_DIR}/${encodePathSegments(rel)}/" target="_blank" rel="noreferrer">Ver projeto</a>
-      <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/main/${ROOT_DIR}/${encodePathSegments(rel)}" target="_blank" rel="noreferrer">Ver código</a>
+      <a class="btn small" href="https://${GITHUB_USER}.github.io/${ROOT_DIR}/${enc(rel)}/" target="_blank" rel="noreferrer">Ver projeto</a>
+      <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(branch)}/${ROOT_DIR}/${enc(rel)}" target="_blank" rel="noreferrer">Ver código</a>
     </div>`;
   grid.appendChild(card);
 }
 
 /* ========== Boot ========== */
 (async function init(){
+  // Ano e GitHub link
   const y = document.getElementById('y'); if(y) y.textContent = new Date().getFullYear();
   const gh = document.getElementById('gh-link'); if (gh) gh.href = `https://github.com/${GITHUB_USER}`;
 
+  // Filtros
   const buttons = document.querySelectorAll('.filter-btn');
   const refresh = () => {
     const active = document.querySelector('.filter-btn.active');
@@ -155,18 +215,42 @@ function renderCard({projectDir, readmeMeta, tags}){
   }));
 
   try{
-    const tree = await getRepoTree();
-    const projects = findProjectsWithReadme(tree);
+    DEFAULT_BRANCH = await getDefaultBranch();
+    console.log('[portfolio] default branch:', DEFAULT_BRANCH);
+
+    const { tree, truncated } = await getRepoTree(DEFAULT_BRANCH);
+    console.log('[portfolio] tree size:', tree.length, 'truncated:', truncated);
+
+    let projects = findProjectsWithReadmeFromTree(tree);
+    if (truncated || projects.length === 0){
+      console.log('[portfolio] usando fallback via /contents...');
+      projects = await findProjectsWithReadmeViaContents(DEFAULT_BRANCH);
+    }
+    console.log('[portfolio] projetos encontrados:', projects.length);
+
+    if (projects.length === 0){
+      warn(`Nenhum README encontrado dentro de ${ROOT_DIR}/`);
+      const grid = document.getElementById('grid');
+      if (grid){
+        grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Nenhum projeto com README.md encontrado em <code>${ROOT_DIR}/</code>.</div>`;
+      }
+      return;
+    }
+
     for(const {dir, readmePath} of projects){
       const [md, tags] = await Promise.all([
-        fetchTextRaw(readmePath),
+        fetchRaw(readmePath, DEFAULT_BRANCH),
         Promise.resolve(inferTagsForProject(dir, tree))
       ]);
       const meta = parseReadme(md || '');
-      renderCard({projectDir: dir, readmeMeta: meta, tags});
+      renderCard({projectDir: dir, readmeMeta: meta, tags, branch: DEFAULT_BRANCH});
     }
     refresh();
   }catch(e){
-    console.warn('Falha no carregamento', e);
+    warn(e);
+    const grid = document.getElementById('grid');
+    if (grid){
+      grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Erro ao carregar projetos. Veja o console para detalhes.</div>`;
+    }
   }
 })();
