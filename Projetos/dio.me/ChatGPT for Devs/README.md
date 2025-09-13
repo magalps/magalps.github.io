@@ -1,5 +1,6 @@
 # Formação ChatGPT for Devs
-image: https://assets.dio.me/DSTU_-zep4rU4JceDp5Bsc62O7pD65ise53xYO9cJm4/f:webp/h:120/q:80/L3RyYWNrcy9lY2EwMjEzMS1lYjZiLTQ2ZWQtOWEyOC1mNmVlNTk3YWVhNTYucG5n
+
+![Capa do Projeto](https://assets.dio.me/DSTU_-zep4rU4JceDp5Bsc62O7pD65ise53xYO9cJm4/f:webp/h:120/q:80/L3RyYWNrcy9lY2EwMjEzMS1lYjZiLTQ2ZWQtOWEyOC1mNmVlNTk3YWVhNTYucG5n)
 
 Detalhes da formação
 Descubra na prática como performar melhor os seus projetos e as suas atividades diárias utilizando o ChatGPT e outras ferramentas de Inteligência Artificial (IA). Com essa incrível Formação, você irá adquirir um conhecimento essencial sobre o ChatGPT e suas diversas aplicações, explorando desde conceitos básicos até a criação de prompts assertivos e o uso do modelo como assistente virtual para desenvolvimento. Durante a jornada, serão exploradas funcionalidades avançadas do ChatGPT aplicadas na simulação de entrevistas técnicas, refatoração de códigos e para a utilização como co-pilot de programação.

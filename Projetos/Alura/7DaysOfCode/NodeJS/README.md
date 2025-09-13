@@ -1,5 +1,6 @@
 # Node.js - Criação de CRUD e API RESTful com Express
-image: https://7daysofcode.io/assets/img/icon-js-card.svg
+
+![Capa do Projeto](https://7daysofcode.io/assets/img/icon-js-card.svg)
 
 construir uma API para gerenciar missões espaciais com o JavaScript utilizando o Node.js! 
 

@@ -1,5 +1,6 @@
 # Node.js - Criação de testes automatizados, workflow do GitHub Actions e integração com a API de IA do Google Gemini
-image: https://7daysofcode.io/assets/img/icon-js-card.svg
+
+![Capa do Projeto](https://7daysofcode.io/assets/img/icon-js-card.svg)
 
 O seu objetivo será construir uma aplicação para gerenciar templates de Prompts que podem ser reutilizados em diversos serviços de Inteligência Artificial, como ChatGTP e Gemini, além de realizar uma integração com a API do Gemini para testar e validar seus prompts.
 

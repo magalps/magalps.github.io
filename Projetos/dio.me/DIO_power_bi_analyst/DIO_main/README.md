@@ -1,5 +1,6 @@
 # Formação Power BI Analyst
-image: https://assets.dio.me/71AmI9yoXiFuH0_QYFfKIbExbbNrgzH40oWhWqB2H3s/f:webp/h:120/q:80/L3RyYWNrcy9iOWIyOTczZS1iMmJlLTRiZjAtYjZiMi01N2E2YzgzNTRhOTUucG5n
+
+![Capa do Projeto](https://assets.dio.me/71AmI9yoXiFuH0_QYFfKIbExbbNrgzH40oWhWqB2H3s/f:webp/h:120/q:80/L3RyYWNrcy9iOWIyOTczZS1iMmJlLTRiZjAtYjZiMi01N2E2YzgzNTRhOTUucG5n)
 
 Mergulhe no mundo de Análise de Dados de BI aplicada com Power BI. A principal habilidade de um(a) profissional de dados está relacionada com a capacidade de transmitir os seus resultados de forma assertiva e clara. Aprenda a executar todo o processo de ETL com a ferramenta de BI mais utilizada do mercado e assim apresentar relatórios e dashboards mais eficientes, organizados e superelegantes sem perder performance e desempenho.
 

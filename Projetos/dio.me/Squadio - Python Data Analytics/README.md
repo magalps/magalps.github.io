@@ -1,5 +1,6 @@
 # Squadio - Python Data Analytics
-image: https://assets.dio.me/LD8fz8Qat_uVi20XxnO-02HYemLdoCmBZSx4LyUzMog/f:webp/h:120/q:80/L3RyYWNrcy8wMTM2NTE4Yy02OGQ2LTQxOTgtYmRiZS02ZDk4MmMzYTEyNjEucG5n
+
+![Capa do Projeto](https://assets.dio.me/LD8fz8Qat_uVi20XxnO-02HYemLdoCmBZSx4LyUzMog/f:webp/h:120/q:80/L3RyYWNrcy8wMTM2NTE4Yy02OGQ2LTQxOTgtYmRiZS02ZDk4MmMzYTEyNjEucG5n)
 
 Num mundo data-driven quem sabe manipular e apresentar dados comanda!
 

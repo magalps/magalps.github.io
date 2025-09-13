@@ -1,5 +1,6 @@
 # Formação Lógica de Programação
-image: https://assets.dio.me/JdBTHUCmNxrrJUiTJ2Xr3uCb3ERnBFWVbLU0kZlfxpY/f:webp/h:120/q:80/L3RyYWNrcy85NzdkMWI0MS01ODg4LTQ0ZDctOGU0Yy01N2QyMzQ4NzQ4ZGMucG5n
+
+![Capa do Projeto](https://assets.dio.me/JdBTHUCmNxrrJUiTJ2Xr3uCb3ERnBFWVbLU0kZlfxpY/f:webp/h:120/q:80/L3RyYWNrcy85NzdkMWI0MS01ODg4LTQ0ZDctOGU0Yy01N2QyMzQ4NzQ4ZGMucG5n)
 
 Domine os fundamentos da programação com clareza. Aprenda a trabalhar com variáveis para armazenar informações, dominar laços de repetição para otimizar fluxos, criar funções para organizar seu código e explorar o conceito de objetos para criar estrutura de dados mais complexas. Desenvolva sua base sólida para se aventurar no mundo da programação com confiança antes de aprender qualquer linguagem.
 

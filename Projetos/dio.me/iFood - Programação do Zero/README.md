@@ -1,5 +1,6 @@
 # Potência Tech iFood - Programação do Zero
-image: https://meu-servidor.com/capa-projeto.png
+
+![Capa do Projeto](https://meu-servidor.com/capa-projeto.png)
 
 A porta de entrada para diversas oportunidades de carreira no campo da tecnologia. Abra caminhos para um futuro promissor com o Bootcamp Potência Tech iFood!
 

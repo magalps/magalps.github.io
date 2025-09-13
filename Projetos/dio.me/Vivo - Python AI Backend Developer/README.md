@@ -1,5 +1,6 @@
 # Santander Bootcamp 2023 - Fullstack Java+Angular
-image: https://assets.dio.me/NF1ax9yHzwtyr8IpQ8z7qZg-CP4ddP0pf8TCoZTiF90/f:webp/h:120/q:80/L3RyYWNrcy9hZmViZTVlZC0yYjE4LTQzOGEtOTViMC0yYzk3MWU5YWVmZjkucG5n
+
+![Capa do Projeto](https://assets.dio.me/NF1ax9yHzwtyr8IpQ8z7qZg-CP4ddP0pf8TCoZTiF90/f:webp/h:120/q:80/L3RyYWNrcy9hZmViZTVlZC0yYjE4LTQzOGEtOTViMC0yYzk3MWU5YWVmZjkucG5n)
 
 Sejam muito bem-vindos(as) ao Santander Bootcamp 2023! Comece agora mesmo sua jornada na trilha de Fullstack Java + Angular, acompanhando as aulas, realizando desafios práticos e concluindo todas as atividades. 
 

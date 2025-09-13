@@ -6,17 +6,25 @@ const ROOT_DIR = 'Projetos';
 const API_BASE = `https://api.github.com/repos/${GITHUB_USER}/${REPO}`;
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}`;
 const API_HEADERS = { 'Accept': 'application/vnd.github+json' };
-// const BRANCH_OVERRIDE = 'main'; // opcional: fixe a branch aqui
+// const BRANCH_OVERRIDE = 'main'; // opcional
 
 const INTEREST_TAGS = new Set(['JS','NodeJS','Python','HTML/CSS','PowerBI','SQL','Java']);
 
-// Ignorar dirs de terceiros/artefatos
 const EXCLUDE_DIRS_RE = /(^|\/)(node_modules|\.venv|venv|__pycache__|dist|build|coverage|\.next|\.nuxt|\.cache|vendor|deps|third[-_]?party|site-packages|dist-packages|packages|\.husky|\.git)(\/|$)/i;
 
+const MAX_PER_PAGE = 3;          // 3 cards por página (carrossel)
+const DESC_LIMIT   = 160;        // limite de caracteres da descrição
+
+/* ==================== Estado do carrossel ==================== */
 let DEFAULT_BRANCH = null;
+let ALL_ITEMS = [];              // [{dir, readmeMeta, tags}]
+let CURRENT_FILTER = 'all';
+let CURRENT_PAGE = 0;            // index da página dentro do filtro
 
 /* ==================== Utils ==================== */
 console.log('[portfolio] script.js carregado');
+
+function clamp(str, n){ if(!str) return ''; return str.length>n ? str.slice(0,n-1)+'…' : str; }
 
 function extToLang(ext){
   switch(ext){
@@ -27,7 +35,7 @@ function extToLang(ext){
     case 'sql': case 'psql': case 'pgsql': return 'SQL';
     case 'java': return 'Java';
     case 'pbix': case 'pbit': return 'PowerBI';
-    case 'm': return 'PowerBI'; // Power Query (M)
+    case 'm': return 'PowerBI'; // Power Query M
     default: return null;
   }
 }
@@ -39,12 +47,15 @@ function enc(relPath){ return relPath.split('/').map(encodeURIComponent).join('/
 function warn(...args){ console.warn('[portfolio]', ...args); }
 
 /* Marcadores do README */
-function getImageMarker(md){ const m=(md||'').match(/^(?:image|capa)\s*:\s*(\S+)/im); return m?m[1]:null; }
-function getProgressMarker(md){
-  const m=(md||'').match(/^(?:progress|feito|conclusao|conclusão)\s*:\s*(\d{1,3})%/im);
-  if(m) return Math.min(100, parseInt(m[1],10));
-  const loose=(md||'').match(/(\d{1,3})\s*%/);
-  return loose ? Math.min(100, parseInt(loose[1],10)) : null;
+function getImageMarker(md){
+  if(!md) return null;
+  // 1) padrão "image:" ou "capa:"
+  const m1 = md.match(/^(?:image|capa)\s*:\s*(\S+)/im);
+  if(m1) return m1[1];
+  // 2) fallback para sintaxe markdown ![alt](url)
+  const m2 = md.match(/!\[.*?\]\((.*?)\)/);
+  if(m2) return m2[1];
+  return null;
 }
 
 /* ==================== Fetch helpers (verbosos) ==================== */
@@ -70,7 +81,7 @@ async function getDefaultBranch(){
   return meta.default_branch || 'main';
 }
 
-/* Árvore: só para inferir tags (não usamos para encontrar projetos) */
+/* Árvore: só para inferir tags */
 async function getRepoTree(branch){
   const j = await safeFetchJSON(`${API_BASE}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
   return { tree: Array.isArray(j.tree) ? j.tree : [], truncated: !!j.truncated };
@@ -96,8 +107,7 @@ async function findProjectsWithReadmeViaContents(branch){
     const hasReadme = list.some(i => i.type==='file' && /^README(?:\.md)?$/i.test(i.name));
     if(hasReadme){
       projects.push({ dir, readmePath: `${dir}/README.md` });
-      // Observação: mesmo tendo README, ainda podemos ter subpastas com seus próprios READMEs.
-      // Opcionalmente poderíamos NÃO descer, mas vamos descer para cobrir casos aninhados.
+      // ainda descemos para pegar subprojetos aninhados, caso existam
     }
 
     // continua descendo em subpastas
@@ -111,7 +121,6 @@ async function findProjectsWithReadmeViaContents(branch){
   return projects;
 }
 
-/* RAW de arquivos (README) */
 async function fetchRaw(path, branch){
   return safeFetchText(`${RAW_BASE}/${encodeURIComponent(branch)}/${enc(path)}`);
 }
@@ -158,11 +167,11 @@ function inferTagsForProject(projectDir, tree){
   return tags.length ? tags : ['HTML/CSS'];
 }
 
-/* ==================== Render ==================== */
+/* ==================== Render (card) ==================== */
 function renderCard({projectDir, readmeMeta, tags, branch}){
   const name = lastSegment(projectDir);
   const rel = afterRoot(projectDir); // remove "Projetos/"
-  const grid = document.getElementById('grid'); if(!grid) return;
+  const desc = clamp(readmeMeta.description || 'Projeto hospedado no GitHub Pages.', DESC_LIMIT);
 
   const card = document.createElement('article');
   card.className = 'project';
@@ -179,12 +188,80 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
   card.innerHTML = `${cover}
     <div class="body">
       <h3>${escapeHtml(readmeMeta.title || name)} ${progressBadge}</h3>
-      <p>${escapeHtml(readmeMeta.description || 'Projeto hospedado no GitHub Pages.')}</p>
+      <p>${escapeHtml(desc)}</p>
       <div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
       <a class="btn small" href="https://${GITHUB_USER}.github.io/${ROOT_DIR}/${enc(rel)}/" target="_blank" rel="noreferrer">Ver projeto</a>
       <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(branch)}/${ROOT_DIR}/${enc(rel)}" target="_blank" rel="noreferrer">Ver código</a>
     </div>`;
-  grid.appendChild(card);
+  return card;
+}
+
+/* ==================== UI do carrossel ==================== */
+function ensureCarouselControls(){
+  const section = document.querySelector('#projetos');
+  if(!section) return {wrap:null, prev:null, next:null, info:null, all:null};
+
+  let ctr = section.querySelector('.carousel-controls');
+  if(!ctr){
+    ctr = document.createElement('div');
+    ctr.className = 'carousel-controls';
+    ctr.style.cssText = 'display:flex;align-items:center;gap:10px;margin:12px 0 0;';
+    ctr.innerHTML = `
+      <button class="btn" data-prev aria-label="Anterior">◀</button>
+      <span class="small" data-info style="color:var(--muted)"></span>
+      <button class="btn" data-next aria-label="Próximo">▶</button>
+      <a class="btn" data-all target="_blank" rel="noreferrer">Ver todos os projetos</a>
+    `;
+    section.appendChild(ctr);
+  }
+  const prev = ctr.querySelector('[data-prev]');
+  const next = ctr.querySelector('[data-next]');
+  const info = ctr.querySelector('[data-info]');
+  const all  = ctr.querySelector('[data-all]');
+  if(all) all.href = `https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(DEFAULT_BRANCH||'main')}/${ROOT_DIR}`;
+  return {wrap:ctr, prev, next, info, all};
+}
+
+function getFilteredItems(){
+  if(CURRENT_FILTER === 'all') return ALL_ITEMS;
+  return ALL_ITEMS.filter(it => it.tags.includes(CURRENT_FILTER));
+}
+
+function renderPage(){
+  const grid = document.getElementById('grid');
+  if(!grid) return;
+
+  const items = getFilteredItems();
+  const total = items.length;
+
+  // corrige página fora do range
+  const totalPages = Math.max(1, Math.ceil(total / MAX_PER_PAGE));
+  if(CURRENT_PAGE > totalPages - 1) CURRENT_PAGE = totalPages - 1;
+  if(CURRENT_PAGE < 0) CURRENT_PAGE = 0;
+
+  grid.innerHTML = '';
+  if(total === 0){
+    grid.innerHTML = `<div class="project" style="padding:16px">Nenhum projeto para este filtro.</div>`;
+  }else{
+    const start = CURRENT_PAGE * MAX_PER_PAGE;
+    const slice = items.slice(start, start + MAX_PER_PAGE);
+    for(const it of slice){
+      grid.appendChild(
+        renderCard({ projectDir: it.dir, readmeMeta: it.readmeMeta, tags: it.tags, branch: DEFAULT_BRANCH })
+      );
+    }
+  }
+
+  // controles
+  const {prev, next, info} = ensureCarouselControls();
+  if(info){
+    const totalPages = Math.max(1, Math.ceil(total / MAX_PER_PAGE));
+    info.textContent = total === 0
+      ? '0 de 0'
+      : `Página ${CURRENT_PAGE + 1} de ${totalPages} • ${total} projeto(s)`;
+  }
+  if(prev) prev.disabled = (CURRENT_PAGE === 0 || total === 0);
+  if(next) next.disabled = (CURRENT_PAGE >= Math.ceil(total / MAX_PER_PAGE) - 1 || total === 0);
 }
 
 /* ==================== Boot ==================== */
@@ -193,57 +270,57 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
   const y = document.getElementById('y'); if(y) y.textContent = new Date().getFullYear();
   const gh = document.getElementById('gh-link'); if (gh) gh.href = `https://github.com/${GITHUB_USER}`;
 
-  // Filtros UI
+  // filtro UI
   const buttons = document.querySelectorAll('.filter-btn');
-  const refresh = () => {
-    const active = document.querySelector('.filter-btn.active');
-    const tag = active ? active.dataset.filter : 'all';
-    document.querySelectorAll('.project').forEach(card=>{
-      const tags = (card.dataset.tags||'').split(',').map(s=>s.trim());
-      card.style.display = (tag==='all' || tags.includes(tag)) ? 'block' : 'none';
-    });
-  };
   buttons.forEach(btn=>btn.addEventListener('click',()=>{
     buttons.forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    refresh();
+    CURRENT_FILTER = btn.dataset.filter || 'all';
+    CURRENT_PAGE = 0;           // reset para 1ª página ao mudar filtro
+    renderPage();
   }));
 
   try{
     DEFAULT_BRANCH = await getDefaultBranch();
     console.log('[portfolio] default branch:', DEFAULT_BRANCH);
 
-    // 1) Usamos a árvore SÓ para inferir tags
+    // 1) árvore para tags
     const { tree } = await getRepoTree(DEFAULT_BRANCH);
-    console.log('[portfolio] tree carregada para tags. blobs:', tree.length);
+    console.log('[portfolio] tree blobs:', tree.length);
 
-    // 2) Descobrimos os projetos SEMPRE via /contents
+    // 2) projetos via /contents
     const projects = await findProjectsWithReadmeViaContents(DEFAULT_BRANCH);
     console.log('[portfolio] projetos (via contents):', projects.length);
 
     if (projects.length === 0){
-      warn(`Nenhum projeto com README.md encontrado em ${ROOT_DIR}/`);
       const grid = document.getElementById('grid');
       if (grid){
-        grid.innerHTML = `<div class="project" style="padding:16px">
-          ⚠️ Nenhum projeto com <code>README.md</code> na raiz foi encontrado em <code>${ROOT_DIR}/</code>.
-        </div>`;
+        grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Nenhum projeto com README.md em <code>${ROOT_DIR}/</code>.</div>`;
       }
       return;
     }
 
-    // 3) Renderiza todos (mesmo sem image/progress — mostramos ⚠️)
-    let rendered = 0;
+    // 3) monta ALL_ITEMS (metadados + tags)
+    ALL_ITEMS = [];
     for (const {dir, readmePath} of projects){
       const md = await fetchRaw(readmePath, DEFAULT_BRANCH);
-      const meta = parseReadme(md || '');
+      const readmeMeta = parseReadme(md || '');
       const tags = inferTagsForProject(dir, tree);
-      renderCard({ projectDir: dir, readmeMeta: meta, tags, branch: DEFAULT_BRANCH });
-      rendered++;
+      ALL_ITEMS.push({ dir, readmeMeta, tags });
     }
-    console.log('[portfolio] cards renderizados:', rendered);
 
-    refresh();
+    // 4) cria controles do carrossel e listeners
+    const {prev, next} = ensureCarouselControls();
+    if(prev) prev.addEventListener('click', ()=>{ CURRENT_PAGE = Math.max(0, CURRENT_PAGE - 1); renderPage(); });
+    if(next) next.addEventListener('click', ()=>{
+      const total = getFilteredItems().length;
+      const last = Math.max(0, Math.ceil(total / MAX_PER_PAGE) - 1);
+      CURRENT_PAGE = Math.min(last, CURRENT_PAGE + 1);
+      renderPage();
+    });
+
+    // 5) render inicial
+    renderPage();
   }catch(e){
     warn('Erro no carregamento:', e.message);
     const grid = document.getElementById('grid');
