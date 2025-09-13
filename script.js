@@ -1,3 +1,4 @@
+console.log('[portfolio] script.js carregado');
 /* ========== Configurações ========== */
 const GITHUB_USER = 'magalps';
 const REPO = `${GITHUB_USER}.github.io`;
