@@ -1,0 +1,138 @@
+{
+  "generatedAt": "2025-09-13T04:59:51.709Z",
+  "projects": [
+    {
+      "dir": "Projetos/Alura/7DaysOfCode/Lógica JS",
+      "readmePath": "Projetos/Alura/7DaysOfCode/Lógica JS/README.md",
+      "meta": {
+        "title": "Lógica com Javascript",
+        "description": "7 desafios independentes para quem está começando na programação",
+        "imageUrl": "https://7daysofcode.io/assets/img/icon-logica-programacao-card.svg",
+        "progress": 10
+      },
+      "tags": [
+        "JS"
+      ]
+    },
+    {
+      "dir": "Projetos/Alura/7DaysOfCode/NodeJS",
+      "readmePath": "Projetos/Alura/7DaysOfCode/NodeJS/README.md",
+      "meta": {
+        "title": "Node.js - Criação de CRUD e API RESTful com Express",
+        "description": "construir uma API para gerenciar missões espaciais com o JavaScript utilizando o Node.js!",
+        "imageUrl": "https://7daysofcode.io/assets/img/icon-js-card.svg",
+        "progress": 10
+      },
+      "tags": [
+        "JS",
+        "NodeJS"
+      ]
+    },
+    {
+      "dir": "Projetos/Alura/7DaysOfCode/NodeJS e Gemini",
+      "readmePath": "Projetos/Alura/7DaysOfCode/NodeJS e Gemini/README.md",
+      "meta": {
+        "title": "Node.js - Criação de testes automatizados, workflow do GitHub Actions e integração com a API de IA do Google Gemini",
+        "description": "O seu objetivo será construir uma aplicação para gerenciar templates de Prompts que podem ser reutilizados em diversos serviços de Inteligência Artificial, como ChatGTP e Gemini, além de realizar uma integração com a API do Gemini para testar e validar seus prompts.",
+        "imageUrl": "https://7daysofcode.io/assets/img/icon-js-card.svg",
+        "progress": 10
+      },
+      "tags": [
+        "JS",
+        "NodeJS"
+      ]
+    },
+    {
+      "dir": "Projetos/dio.me/ChatGPT for Devs",
+      "readmePath": "Projetos/dio.me/ChatGPT for Devs/README.md",
+      "meta": {
+        "title": "Formação ChatGPT for Devs",
+        "description": "Detalhes da formação Descubra na prática como performar melhor os seus projetos e as suas atividades diárias utilizando o ChatGPT e outras ferramentas de Inteligência Artificial (IA). Com essa incrível Formação, você irá adquirir um conhecimento essencial sobre o ChatGPT e suas diversas aplicações, explorando desde conceitos básicos até a criação de prompts assertivos e o uso do modelo como assistente virtual para desenvolvimento. Durante a jornada, serão exploradas funcionalidades avançadas do ChatGPT aplicadas na simulação de entrevistas técnicas, refatoração de códigos e para a utilização como co-pilot de programação.",
+        "imageUrl": "https://assets.dio.me/DSTU_-zep4rU4JceDp5Bsc62O7pD65ise53xYO9cJm4/f:webp/h:120/q:80/L3RyYWNrcy9lY2EwMjEzMS1lYjZiLTQ2ZWQtOWEyOC1mNmVlNTk3YWVhNTYucG5n",
+        "progress": 69
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/dio.me/DIO_power_bi_analyst/DIO_main",
+      "readmePath": "Projetos/dio.me/DIO_power_bi_analyst/DIO_main/README.md",
+      "meta": {
+        "title": "Formação Power BI Analyst",
+        "description": "Mergulhe no mundo de Análise de Dados de BI aplicada com Power BI. A principal habilidade de um(a) profissional de dados está relacionada com a capacidade de transmitir os seus resultados de forma assertiva e clara. Aprenda a executar todo o processo de ETL com a ferramenta de BI mais utilizada do mercado e assim apresentar relatórios e dashboards mais eficientes, organizados e superelegantes sem perder performance e desempenho.",
+        "imageUrl": "https://assets.dio.me/71AmI9yoXiFuH0_QYFfKIbExbbNrgzH40oWhWqB2H3s/f:webp/h:120/q:80/L3RyYWNrcy9iOWIyOTczZS1iMmJlLTRiZjAtYjZiMi01N2E2YzgzNTRhOTUucG5n",
+        "progress": 15
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/dio.me/Formação Lógica de Programação",
+      "readmePath": "Projetos/dio.me/Formação Lógica de Programação/README.md",
+      "meta": {
+        "title": "Formação Lógica de Programação",
+        "description": "Domine os fundamentos da programação com clareza. Aprenda a trabalhar com variáveis para armazenar informações, dominar laços de repetição para otimizar fluxos, criar funções para organizar seu código e explorar o conceito de objetos para criar estrutura de dados mais complexas. Desenvolva sua base sólida para se aventurar no mundo da programação com confiança antes de aprender qualquer linguagem.",
+        "imageUrl": "https://assets.dio.me/JdBTHUCmNxrrJUiTJ2Xr3uCb3ERnBFWVbLU0kZlfxpY/f:webp/h:120/q:80/L3RyYWNrcy85NzdkMWI0MS01ODg4LTQ0ZDctOGU0Yy01N2QyMzQ4NzQ4ZGMucG5n",
+        "progress": 60
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/dio.me/Formação SQL Database Specialist",
+      "readmePath": "Projetos/dio.me/Formação SQL Database Specialist/README.md",
+      "meta": {
+        "title": "Formação SQL Database Specialist",
+        "description": "Desenvolva suas habilidades com banco de dados, aprenda como modelar uma base de dados de acordo com necessidades de negócios, aprenda a trabalhar com comandos Data Manipulation Language (DML) e Data Definition Language (DDL) para consultar e manipular seus dados. Crie projetos de soluções baseadas nas boas práticas das regras formais e explore técnicas de Recuperação e Controle de Concorrência em Banco de dados.",
+        "imageUrl": "https://assets.dio.me/yy6sKyMBqxiVgT2DkB-OBj1pEWkmSSmDoD0BaiR607k/f:webp/h:120/q:80/L3RyYWNrcy9iYzQ1NDE0OC02ZTcyLTQwNDctOTVjYy1kNTE2NzA2YWU0MDUucG5n",
+        "progress": 34
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/dio.me/iFood - Programação do Zero",
+      "readmePath": "Projetos/dio.me/iFood - Programação do Zero/README.md",
+      "meta": {
+        "title": "Potência Tech iFood - Programação do Zero",
+        "description": "A porta de entrada para diversas oportunidades de carreira no campo da tecnologia. Abra caminhos para um futuro promissor com o Bootcamp Potência Tech iFood!",
+        "imageUrl": "https://meu-servidor.com/capa-projeto.png",
+        "progress": 67
+      },
+      "tags": [
+        "HTML/CSS",
+        "JS"
+      ]
+    },
+    {
+      "dir": "Projetos/dio.me/Squadio - Python Data Analytics",
+      "readmePath": "Projetos/dio.me/Squadio - Python Data Analytics/README.md",
+      "meta": {
+        "title": "Squadio - Python Data Analytics",
+        "description": "Num mundo data-driven quem sabe manipular e apresentar dados comanda!",
+        "imageUrl": "https://assets.dio.me/LD8fz8Qat_uVi20XxnO-02HYemLdoCmBZSx4LyUzMog/f:webp/h:120/q:80/L3RyYWNrcy8wMTM2NTE4Yy02OGQ2LTQxOTgtYmRiZS02ZDk4MmMzYTEyNjEucG5n",
+        "progress": 51
+      },
+      "tags": [
+        "Python"
+      ]
+    },
+    {
+      "dir": "Projetos/dio.me/Vivo - Python AI Backend Developer",
+      "readmePath": "Projetos/dio.me/Vivo - Python AI Backend Developer/README.md",
+      "meta": {
+        "title": "Santander Bootcamp 2023 - Fullstack Java+Angular",
+        "description": "Sejam muito bem-vindos(as) ao Santander Bootcamp 2023! Comece agora mesmo sua jornada na trilha de Fullstack Java + Angular, acompanhando as aulas, realizando desafios práticos e concluindo todas as atividades.",
+        "imageUrl": "https://assets.dio.me/NF1ax9yHzwtyr8IpQ8z7qZg-CP4ddP0pf8TCoZTiF90/f:webp/h:120/q:80/L3RyYWNrcy9hZmViZTVlZC0yYjE4LTQzOGEtOTViMC0yYzk3MWU5YWVmZjkucG5n",
+        "progress": 39
+      },
+      "tags": [
+        "Python"
+      ]
+    }
+  ]
+}
