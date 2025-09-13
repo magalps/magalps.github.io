@@ -1,18 +1,16 @@
 /* ==================== Config ==================== */
 const GITHUB_USER = 'magalps';
 const REPO = `${GITHUB_USER}.github.io`;
-
-// >>>>> SOMENTE projetos 1 nível abaixo destas bases:
-const PROJECT_BASES = [
-  'Projetos/Alura/7DaysOfCode',   // <base>/<projeto>/README.md
-];
+const ROOT_DIR = 'Projetos';
 
 const API_BASE = `https://api.github.com/repos/${GITHUB_USER}/${REPO}`;
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}`;
 const API_HEADERS = { 'Accept': 'application/vnd.github+json' };
-// const BRANCH_OVERRIDE = 'main';
+// const BRANCH_OVERRIDE = 'main'; // opcional: force a branch
 
 const INTEREST_TAGS = new Set(['JS','NodeJS','Python','HTML/CSS','PowerBI','SQL','Java']);
+
+// Ignorar dirs de terceiros/artefatos
 const EXCLUDE_DIRS_RE = /(^|\/)(node_modules|\.venv|venv|__pycache__|dist|build|coverage|\.next|\.nuxt|\.cache|vendor|deps|third[-_]?party|site-packages|dist-packages|packages|\.husky|\.git)(\/|$)/i;
 
 let DEFAULT_BRANCH = null;
@@ -29,36 +27,29 @@ function extToLang(ext){
     case 'sql': case 'psql': case 'pgsql': return 'SQL';
     case 'java': return 'Java';
     case 'pbix': case 'pbit': return 'PowerBI';
-    case 'm': return 'PowerBI';
+    case 'm': return 'PowerBI'; // Power Query M
     default: return null;
   }
 }
 function detectNode(files){ return files.some(p => /(^|\/)package\.json$/i.test(p)) ? 'NodeJS' : null; }
 function escapeHtml(str){ return (str||'').replace(/[&<>\"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[s])); }
-function enc(relPath){ return relPath.split('/').map(encodeURIComponent).join('/'); }
+function afterRoot(path){ return path.replace(new RegExp(`^${ROOT_DIR}/`), ''); }
 function lastSegment(path){ const parts = path.split('/').filter(Boolean); return parts[parts.length-1] || path; }
+function enc(relPath){ return relPath.split('/').map(encodeURIComponent).join('/'); }
 function warn(...args){ console.warn('[portfolio]', ...args); }
 
-function hasOurMarkers(md){
-  if(!md) return false;
-  const hasImage = /^(?:image|capa)\s*:\s*\S+/im.test(md);
-  const hasProgress = /^(?:progress|feito|conclusao|conclusão)\s*:\s*\d{1,3}%/im.test(md);
-  return hasImage || hasProgress;
+/* README deve ter ao menos um desses marcadores para exibir badges;
+   Se não tiver, mostramos ⚠️ mas não escondemos o projeto. */
+function hasImageMarker(md){ return /^(?:image|capa)\s*:\s*\S+/im.test(md||''); }
+function getImageMarker(md){ const m=(md||'').match(/^(?:image|capa)\s*:\s*(\S+)/im); return m?m[1]:null; }
+function getProgressMarker(md){
+  const m=(md||'').match(/^(?:progress|feito|conclusao|conclusão)\s*:\s*(\d{1,3})%/im);
+  if(m) return Math.min(100, parseInt(m[1],10));
+  const loose=(md||'').match(/(\d{1,3})\s*%/); // fallback leve
+  return loose ? Math.min(100, parseInt(loose[1],10)) : null;
 }
 
-function isUnderAllowedBaseExactlyOneLevel(dir){
-  // dir deve ser <base>/<nomeDoProjeto> (apenas um segmento a mais)
-  for(const base of PROJECT_BASES){
-    if(!dir.startsWith(base + '/')) continue;
-    if(EXCLUDE_DIRS_RE.test(dir)) continue;
-    const rest = dir.slice(base.length + 1); // remove "base/"
-    if(!rest || rest.includes('/')) continue; // deve ter 1 segmento apenas
-    return true;
-  }
-  return false;
-}
-
-/* ==================== Fetch helpers ==================== */
+/* ==================== Fetch helpers (verbosos) ==================== */
 async function safeFetchJSON(url, headers = API_HEADERS){
   console.log('[portfolio] GET', url);
   const res = await fetch(url, { headers });
@@ -85,24 +76,19 @@ async function getRepoTree(branch){
   return { tree: Array.isArray(j.tree) ? j.tree : [], truncated: !!j.truncated };
 }
 
-/* 
-  Só aceita README que esteja exatamente em: <base>/<projeto>/README.md
-  e ignora qualquer outro caminho.
-*/
+/* Encontra TODOS os READMEs dentro de Projetos/ (qualquer profundidade), ignorando dirs excluídos */
 function findProjectsWithReadmeFromTree(tree){
   const readmeRegex = /\/README(?:\.md)?$/i;
   const readmes = tree.filter(n =>
     n.type === 'blob' &&
+    n.path.startsWith(`${ROOT_DIR}/`) &&
     readmeRegex.test(n.path) &&
-    PROJECT_BASES.some(base => n.path.startsWith(base + '/')) &&
     !EXCLUDE_DIRS_RE.test(n.path)
   );
-
   const projects = [];
   const seen = new Set();
   for(const r of readmes){
     const dir = r.path.replace(/\/README(?:\.md)?$/i, '');
-    if(!isUnderAllowedBaseExactlyOneLevel(dir)) continue; // <<< regra 1 nível
     if(seen.has(dir)) continue;
     seen.add(dir);
     projects.push({ dir, readmePath: r.path });
@@ -110,28 +96,35 @@ function findProjectsWithReadmeFromTree(tree){
   return projects;
 }
 
-// Fallback via /contents respeitando as mesmas regras
+/* Fallback via /contents quando a tree vier truncada */
 async function findProjectsWithReadmeViaContents(branch){
   const projects = [];
-  for(const base of PROJECT_BASES){
-    // lista os itens diretamente dentro da base
-    const url = `${API_BASE}/contents/${enc(base)}?ref=${encodeURIComponent(branch)}`;
+  // BFS manual começando em ROOT_DIR
+  const queue = [ROOT_DIR];
+  const visited = new Set(queue);
+
+  while(queue.length){
+    const dir = queue.shift();
+    if(EXCLUDE_DIRS_RE.test(dir)) continue;
+
     let list;
-    try { list = await safeFetchJSON(url); } catch(e){ warn('contents falhou em', base, e.message); continue; }
+    try { list = await safeFetchJSON(`${API_BASE}/contents/${enc(dir)}?ref=${encodeURIComponent(branch)}`); }
+    catch(e){ warn('contents falhou em', dir, e.message); continue; }
+
     if(!Array.isArray(list)) continue;
+    let hasReadme = false;
 
     for(const item of list){
-      if(item.type !== 'dir') continue;
-      const dir = `${base}/${item.name}`;
-      if(EXCLUDE_DIRS_RE.test(dir)) continue;
+      if(item.type === 'file' && /^README(?:\.md)?$/i.test(item.name)){
+        hasReadme = true;
+      }
+    }
+    if(hasReadme){ projects.push({ dir, readmePath: `${dir}/README.md` }); }
 
-      // precisa ter README na raiz dessa pasta
-      const url2 = `${API_BASE}/contents/${enc(dir)}?ref=${encodeURIComponent(branch)}`;
-      let list2;
-      try { list2 = await safeFetchJSON(url2); } catch(e){ continue; }
-      const hasReadme = Array.isArray(list2) && list2.some(f => f.type==='file' && /^README(?:\.md)?$/i.test(f.name));
-      if(hasReadme){
-        projects.push({ dir, readmePath: `${dir}/README.md` });
+    for(const item of list){
+      if(item.type === 'dir'){
+        const nd = `${dir}/${item.name}`;
+        if(!visited.has(nd)){ visited.add(nd); queue.push(nd); }
       }
     }
   }
@@ -148,6 +141,7 @@ function parseReadme(md){
   const titleMatch = md.match(/^#\s+(.+)$/m);
   const title = titleMatch ? titleMatch[1].trim() : null;
 
+  // primeira descrição (bloco de parágrafo) que não seja título/img/linha image:
   const blocks = md.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
   let description = null;
   for(const b of blocks){
@@ -155,27 +149,22 @@ function parseReadme(md){
     if(/^!\[.*?\]\(.*?\)/.test(b)) continue;
     if(/^(image|capa)\s*:/i.test(b)) continue;
     description = b.replace(/\n/g,' ');
-    if(description.length>0){ break; }
+    if(description.length>0) break;
   }
 
-  let imageUrl = null;
-  const imgLine = md.match(/^(?:image|capa)\s*:\s*(\S+)/im);
-  if(imgLine) imageUrl = imgLine[1];
+  const imageUrl = getImageMarker(md);
+  const progress = getProgressMarker(md);
 
-  let progress = null;
-  const progLine = md.match(/^(?:progress|feito|conclusao|conclusão)\s*:\s*(\d{1,3})%/im);
-  if(progLine) progress = Math.min(100, parseInt(progLine[1],10));
-  if(progress==null){
-    const loose = md.match(/(\d{1,3})\s*%/);
-    if(loose) progress = Math.min(100, parseInt(loose[1],10));
-  }
   return {title, description, imageUrl, progress};
 }
 
 /* ==================== Tags por projeto ==================== */
 function inferTagsForProject(projectDir, tree){
   const prefix = `${projectDir}/`;
-  const files = tree.filter(p => p.type==='blob' && p.path.startsWith(prefix) && !EXCLUDE_DIRS_RE.test(p.path)).map(p=>p.path);
+  const files = tree
+    .filter(p => p.type==='blob' && p.path.startsWith(prefix) && !EXCLUDE_DIRS_RE.test(p.path))
+    .map(p=>p.path);
+
   const tagSet = new Set();
   for(const p of files){
     const m = p.match(/\.([a-z0-9]+)$/i);
@@ -191,40 +180,36 @@ function inferTagsForProject(projectDir, tree){
 /* ==================== Render ==================== */
 function renderCard({projectDir, readmeMeta, tags, branch}){
   const name = lastSegment(projectDir);
-  const rel = projectDir.replace(/^.*?\//, m => ''); // remove prefixo até primeiro '/'; não usamos na URL
+  const rel = afterRoot(projectDir); // remove "Projetos/"
   const grid = document.getElementById('grid'); if(!grid) return;
 
   const card = document.createElement('article');
   card.className = 'project';
   card.dataset.tags = tags.join(',');
 
-  let cover;
-  if(readmeMeta.imageUrl){
-    cover = `<img class="cover" src="${escapeHtml(readmeMeta.imageUrl)}" alt="${escapeHtml(readmeMeta.title || name)}">`;
-  } else {
-    cover = `<div class="cover" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">⚠️ sem capa</div>`;
-  }
+  const hasImage = !!readmeMeta.imageUrl;
+  const cover = hasImage
+    ? `<img class="cover" src="${escapeHtml(readmeMeta.imageUrl)}" alt="${escapeHtml(readmeMeta.title || name)}">`
+    : `<div class="cover" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">⚠️ sem capa</div>`;
 
-  let progressBadge;
-  if(typeof readmeMeta.progress === 'number'){
-    progressBadge = `<span class="progress">Progresso: ${readmeMeta.progress}%</span>`;
-  } else {
-    progressBadge = `<span class="progress">⚠️ sem progresso</span>`;
-  }
+  const progressBadge = (typeof readmeMeta.progress === 'number')
+    ? `<span class="progress">Progresso: ${readmeMeta.progress}%</span>`
+    : `<span class="progress">⚠️ sem progresso</span>`;
 
   card.innerHTML = `${cover}
     <div class="body">
       <h3>${escapeHtml(readmeMeta.title || name)} ${progressBadge}</h3>
       <p>${escapeHtml(readmeMeta.description || 'Projeto hospedado no GitHub Pages.')}</p>
       <div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
-      <a class="btn small" href="https://${GITHUB_USER}.github.io/${enc(projectDir)}/" target="_blank" rel="noreferrer">Ver projeto</a>
-      <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(branch)}/${enc(projectDir)}" target="_blank" rel="noreferrer">Ver código</a>
+      <a class="btn small" href="https://${GITHUB_USER}.github.io/${ROOT_DIR}/${enc(rel)}/" target="_blank" rel="noreferrer">Ver projeto</a>
+      <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(branch)}/${ROOT_DIR}/${enc(rel)}" target="_blank" rel="noreferrer">Ver código</a>
     </div>`;
   grid.appendChild(card);
 }
 
 /* ==================== Boot ==================== */
 (async function init(){
+  // ano e link
   const y = document.getElementById('y'); if(y) y.textContent = new Date().getFullYear();
   const gh = document.getElementById('gh-link'); if (gh) gh.href = `https://github.com/${GITHUB_USER}`;
 
@@ -252,43 +237,39 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
     console.log('[portfolio] tree size:', tree.length, 'truncated:', truncated);
 
     let projects = findProjectsWithReadmeFromTree(tree);
-    if (truncated || projects.length === 0){
-      console.log('[portfolio] usando fallback via /contents…');
+    if (truncated){
+      console.log('[portfolio] tree truncada — usando fallback via /contents…');
       projects = await findProjectsWithReadmeViaContents(DEFAULT_BRANCH);
     }
-    console.log('[portfolio] candidatos (base + README):', projects.length);
+    console.log('[portfolio] projetos com README encontrados:', projects.length);
+
+    if (projects.length === 0){
+      warn(`Nenhum README encontrado em ${ROOT_DIR}/`);
+      const grid = document.getElementById('grid');
+      if (grid){
+        grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Nenhum projeto com README.md encontrado em <code>${ROOT_DIR}/</code>.</div>`;
+      }
+      return;
+    }
 
     let rendered = 0;
     for (const {dir, readmePath} of projects){
-      const md = await fetchRaw(readmePath, DEFAULT_BRANCH);
-      if (!hasOurMarkers(md || '')) {
-        console.log('[portfolio] ignorando (sem image/progress):', readmePath);
-        continue;
-      }
+      const [md, tags] = await Promise.all([
+        fetchRaw(readmePath, DEFAULT_BRANCH),
+        Promise.resolve(inferTagsForProject(dir, tree))
+      ]);
+
       const meta = parseReadme(md || '');
-      const tags = inferTagsForProject(dir, tree);
       renderCard({ projectDir: dir, readmeMeta: meta, tags, branch: DEFAULT_BRANCH });
       rendered++;
     }
     console.log('[portfolio] cards renderizados:', rendered);
-
-    if(rendered === 0){
-      const grid = document.getElementById('grid');
-      if (grid){
-        grid.innerHTML = `<div class="project" style="padding:16px">
-          ⚠️ Nenhum projeto válido encontrado.<br>
-          Certifique-se de criar pastas em <code>${PROJECT_BASES.join('</code> e <code>')}</code>
-          com um <code>README.md</code> contendo <code>image:</code> e/ou <code>progress:</code>.
-        </div>`;
-      }
-    }
-
     refresh();
   }catch(e){
     warn('Erro no carregamento:', e.message);
     const grid = document.getElementById('grid');
     if (grid){
-      grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Erro ao carregar projetos. Veja o Console.</div>`;
+      grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Erro ao carregar projetos. Veja o Console para detalhes.</div>`;
     }
   }
 })();
