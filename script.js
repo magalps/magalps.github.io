@@ -6,7 +6,7 @@ const ROOT_DIR = 'Projetos';
 const API_BASE = `https://api.github.com/repos/${GITHUB_USER}/${REPO}`;
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}`;
 const API_HEADERS = { 'Accept': 'application/vnd.github+json' };
-// const BRANCH_OVERRIDE = 'main'; // opcional: force a branch
+// const BRANCH_OVERRIDE = 'main'; // opcional: fixe a branch aqui
 
 const INTEREST_TAGS = new Set(['JS','NodeJS','Python','HTML/CSS','PowerBI','SQL','Java']);
 
@@ -27,7 +27,7 @@ function extToLang(ext){
     case 'sql': case 'psql': case 'pgsql': return 'SQL';
     case 'java': return 'Java';
     case 'pbix': case 'pbit': return 'PowerBI';
-    case 'm': return 'PowerBI'; // Power Query M
+    case 'm': return 'PowerBI'; // Power Query (M)
     default: return null;
   }
 }
@@ -38,14 +38,12 @@ function lastSegment(path){ const parts = path.split('/').filter(Boolean); retur
 function enc(relPath){ return relPath.split('/').map(encodeURIComponent).join('/'); }
 function warn(...args){ console.warn('[portfolio]', ...args); }
 
-/* README deve ter ao menos um desses marcadores para exibir badges;
-   Se não tiver, mostramos ⚠️ mas não escondemos o projeto. */
-function hasImageMarker(md){ return /^(?:image|capa)\s*:\s*\S+/im.test(md||''); }
+/* Marcadores do README */
 function getImageMarker(md){ const m=(md||'').match(/^(?:image|capa)\s*:\s*(\S+)/im); return m?m[1]:null; }
 function getProgressMarker(md){
   const m=(md||'').match(/^(?:progress|feito|conclusao|conclusão)\s*:\s*(\d{1,3})%/im);
   if(m) return Math.min(100, parseInt(m[1],10));
-  const loose=(md||'').match(/(\d{1,3})\s*%/); // fallback leve
+  const loose=(md||'').match(/(\d{1,3})\s*%/);
   return loose ? Math.min(100, parseInt(loose[1],10)) : null;
 }
 
@@ -71,35 +69,16 @@ async function getDefaultBranch(){
   const meta = await safeFetchJSON(API_BASE);
   return meta.default_branch || 'main';
 }
+
+/* Árvore: só para inferir tags (não usamos para encontrar projetos) */
 async function getRepoTree(branch){
   const j = await safeFetchJSON(`${API_BASE}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
   return { tree: Array.isArray(j.tree) ? j.tree : [], truncated: !!j.truncated };
 }
 
-/* Encontra TODOS os READMEs dentro de Projetos/ (qualquer profundidade), ignorando dirs excluídos */
-function findProjectsWithReadmeFromTree(tree){
-  const readmeRegex = /\/README(?:\.md)?$/i;
-  const readmes = tree.filter(n =>
-    n.type === 'blob' &&
-    n.path.startsWith(`${ROOT_DIR}/`) &&
-    readmeRegex.test(n.path) &&
-    !EXCLUDE_DIRS_RE.test(n.path)
-  );
-  const projects = [];
-  const seen = new Set();
-  for(const r of readmes){
-    const dir = r.path.replace(/\/README(?:\.md)?$/i, '');
-    if(seen.has(dir)) continue;
-    seen.add(dir);
-    projects.push({ dir, readmePath: r.path });
-  }
-  return projects;
-}
-
-/* Fallback via /contents quando a tree vier truncada */
+/* Descobre projetos via /contents (varredura completa em Projetos/) */
 async function findProjectsWithReadmeViaContents(branch){
   const projects = [];
-  // BFS manual começando em ROOT_DIR
   const queue = [ROOT_DIR];
   const visited = new Set(queue);
 
@@ -112,15 +91,16 @@ async function findProjectsWithReadmeViaContents(branch){
     catch(e){ warn('contents falhou em', dir, e.message); continue; }
 
     if(!Array.isArray(list)) continue;
-    let hasReadme = false;
 
-    for(const item of list){
-      if(item.type === 'file' && /^README(?:\.md)?$/i.test(item.name)){
-        hasReadme = true;
-      }
+    // projeto = pasta que contém README na raiz
+    const hasReadme = list.some(i => i.type==='file' && /^README(?:\.md)?$/i.test(i.name));
+    if(hasReadme){
+      projects.push({ dir, readmePath: `${dir}/README.md` });
+      // Observação: mesmo tendo README, ainda podemos ter subpastas com seus próprios READMEs.
+      // Opcionalmente poderíamos NÃO descer, mas vamos descer para cobrir casos aninhados.
     }
-    if(hasReadme){ projects.push({ dir, readmePath: `${dir}/README.md` }); }
 
+    // continua descendo em subpastas
     for(const item of list){
       if(item.type === 'dir'){
         const nd = `${dir}/${item.name}`;
@@ -131,6 +111,7 @@ async function findProjectsWithReadmeViaContents(branch){
   return projects;
 }
 
+/* RAW de arquivos (README) */
 async function fetchRaw(path, branch){
   return safeFetchText(`${RAW_BASE}/${encodeURIComponent(branch)}/${enc(path)}`);
 }
@@ -141,7 +122,7 @@ function parseReadme(md){
   const titleMatch = md.match(/^#\s+(.+)$/m);
   const title = titleMatch ? titleMatch[1].trim() : null;
 
-  // primeira descrição (bloco de parágrafo) que não seja título/img/linha image:
+  // primeira descrição que não seja título/img/linha image:
   const blocks = md.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
   let description = null;
   for(const b of blocks){
@@ -158,7 +139,7 @@ function parseReadme(md){
   return {title, description, imageUrl, progress};
 }
 
-/* ==================== Tags por projeto ==================== */
+/* ==================== Tags por projeto (usa a árvore) ==================== */
 function inferTagsForProject(projectDir, tree){
   const prefix = `${projectDir}/`;
   const files = tree
@@ -187,8 +168,7 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
   card.className = 'project';
   card.dataset.tags = tags.join(',');
 
-  const hasImage = !!readmeMeta.imageUrl;
-  const cover = hasImage
+  const cover = readmeMeta.imageUrl
     ? `<img class="cover" src="${escapeHtml(readmeMeta.imageUrl)}" alt="${escapeHtml(readmeMeta.title || name)}">`
     : `<div class="cover" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">⚠️ sem capa</div>`;
 
@@ -209,11 +189,11 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
 
 /* ==================== Boot ==================== */
 (async function init(){
-  // ano e link
+  // ano + link GitHub
   const y = document.getElementById('y'); if(y) y.textContent = new Date().getFullYear();
   const gh = document.getElementById('gh-link'); if (gh) gh.href = `https://github.com/${GITHUB_USER}`;
 
-  // filtros
+  // Filtros UI
   const buttons = document.querySelectorAll('.filter-btn');
   const refresh = () => {
     const active = document.querySelector('.filter-btn.active');
@@ -233,43 +213,42 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
     DEFAULT_BRANCH = await getDefaultBranch();
     console.log('[portfolio] default branch:', DEFAULT_BRANCH);
 
-    const { tree, truncated } = await getRepoTree(DEFAULT_BRANCH);
-    console.log('[portfolio] tree size:', tree.length, 'truncated:', truncated);
+    // 1) Usamos a árvore SÓ para inferir tags
+    const { tree } = await getRepoTree(DEFAULT_BRANCH);
+    console.log('[portfolio] tree carregada para tags. blobs:', tree.length);
 
-    let projects = findProjectsWithReadmeFromTree(tree);
-    if (truncated){
-      console.log('[portfolio] tree truncada — usando fallback via /contents…');
-      projects = await findProjectsWithReadmeViaContents(DEFAULT_BRANCH);
-    }
-    console.log('[portfolio] projetos com README encontrados:', projects.length);
+    // 2) Descobrimos os projetos SEMPRE via /contents
+    const projects = await findProjectsWithReadmeViaContents(DEFAULT_BRANCH);
+    console.log('[portfolio] projetos (via contents):', projects.length);
 
     if (projects.length === 0){
-      warn(`Nenhum README encontrado em ${ROOT_DIR}/`);
+      warn(`Nenhum projeto com README.md encontrado em ${ROOT_DIR}/`);
       const grid = document.getElementById('grid');
       if (grid){
-        grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Nenhum projeto com README.md encontrado em <code>${ROOT_DIR}/</code>.</div>`;
+        grid.innerHTML = `<div class="project" style="padding:16px">
+          ⚠️ Nenhum projeto com <code>README.md</code> na raiz foi encontrado em <code>${ROOT_DIR}/</code>.
+        </div>`;
       }
       return;
     }
 
+    // 3) Renderiza todos (mesmo sem image/progress — mostramos ⚠️)
     let rendered = 0;
     for (const {dir, readmePath} of projects){
-      const [md, tags] = await Promise.all([
-        fetchRaw(readmePath, DEFAULT_BRANCH),
-        Promise.resolve(inferTagsForProject(dir, tree))
-      ]);
-
+      const md = await fetchRaw(readmePath, DEFAULT_BRANCH);
       const meta = parseReadme(md || '');
+      const tags = inferTagsForProject(dir, tree);
       renderCard({ projectDir: dir, readmeMeta: meta, tags, branch: DEFAULT_BRANCH });
       rendered++;
     }
     console.log('[portfolio] cards renderizados:', rendered);
+
     refresh();
   }catch(e){
     warn('Erro no carregamento:', e.message);
     const grid = document.getElementById('grid');
     if (grid){
-      grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Erro ao carregar projetos. Veja o Console para detalhes.</div>`;
+      grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Erro ao carregar projetos. Veja o Console.</div>`;
     }
   }
 })();
