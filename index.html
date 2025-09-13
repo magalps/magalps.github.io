@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anderson Soares • Portfólio</title>
+  <meta name="description" content="Portfólio técnico de Anderson Soares – JS, Node.js, Python, HTML/CSS, Power BI, SQL e Java." />
+  <meta property="og:title" content="Portfólio • Anderson Soares" />
+  <meta property="og:description" content="JS • Node.js • Python • HTML/CSS • Power BI • SQL • Java" />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    :root{
+      --bg: #0b1220; /* slate-950 */
+      --card: #0f172a; /* slate-900 */
+      --muted: #94a3b8; /* slate-400 */
+      --text: #e2e8f0; /* slate-200 */
+      --brand: #0ea5e9; /* sky-500 */
+      --brand-2: #22d3ee; /* cyan-400 */
+      --ring: rgba(14,165,233,.35);
+      --border: #1f2937; /* gray-800 */
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f8fafc; --card:#ffffff; --muted:#475569; --text:#0f172a; --border:#e2e8f0; --ring:rgba(14,165,233,.45);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Noto Sans',sans-serif; 
+      background:radial-gradient(1200px 600px at 10% -10%, rgba(34,211,238,.15), transparent 60%),
+                 radial-gradient(900px 500px at 90% 10%, rgba(14,165,233,.12), transparent 60%),
+                 var(--bg); color:var(--text);
+    }
+    .container{max-width:1100px; margin:0 auto; padding:32px 20px}
+    header{
+      position:sticky; top:0; backdrop-filter:saturate(140%) blur(10px);
+      background:linear-gradient(180deg, rgba(0,0,0,.25), transparent);
+      border-bottom:1px solid var(--border);
+      z-index:10;
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 20px}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 10px; border-radius:10px}
+    .nav a:hover{color:var(--text); background:rgba(255,255,255,.06)}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
+    .badge{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; color:var(--muted)}
+    .badge .dot{width:8px; height:8px; background:linear-gradient(90deg,var(--brand),var(--brand-2)); border-radius:999px; box-shadow:0 0 0 3px var(--ring)}
+
+    .hero{display:grid; grid-template-columns:1.1fr .9fr; gap:24px; align-items:center; padding:40px 20px}
+    @media (max-width:900px){.hero{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid var(--border); border-radius:24px; box-shadow:0 8px 30px rgba(2,6,23,.35);}
+    .hero .card{padding:26px}
+    .title{font-size:clamp(28px, 4vw, 42px); line-height:1.15; margin:0 0 12px}
+    .subtitle{color:var(--muted); margin:0 0 18px}
+    .cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
+    .btn{appearance:none; border:1px solid var(--border); background:var(--card); color:var(--text); padding:10px 14px; border-radius:14px; text-decoration:none; font-weight:600}
+    .btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand-2)); color:#00131a; border:none}
+    .btn:hover{transform:translateY(-1px); box-shadow:0 8px 20px var(--ring)}
+
+    .stack{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .chip{border:1px solid var(--border); color:var(--muted); padding:6px 10px; border-radius:999px; font-size:14px}
+
+    h2{font-size:clamp(22px,3vw,28px); margin:18px 0}
+
+    .filters{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 18px}
+    .filter-btn{cursor:pointer; border:1px solid var(--border); background:var(--card); color:var(--muted); padding:8px 12px; border-radius:12px}
+    .filter-btn.active{outline:2px solid var(--ring); color:var(--text)}
+
+    .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+    @media (max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:680px){.grid{grid-template-columns:1fr}}
+    .project{padding:18px; border-radius:18px; border:1px solid var(--border); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));}
+    .project h3{margin:4px 0 6px; font-size:18px}
+    .project p{margin:0; color:var(--muted)}
+    .project .tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+    .tag{font-size:12px; border:1px dashed var(--border); border-radius:999px; padding:4px 8px; color:var(--muted)}
+    .project a{display:inline-block; margin-top:12px}
+
+    footer{border-top:1px solid var(--border); margin-top:40px; padding:22px 0; color:var(--muted)}
+    .small{font-size:14px}
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav container">
+      <div class="brand"><span class="badge"><span class="dot"></span>Disponível para projetos</span></div>
+      <div>
+        <a href="#projetos">Projetos</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#contato">Contato</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="card">
+        <h1 class="title">Anderson Soares</h1>
+        <p class="subtitle">Desenvolvedor & Analista de Dados — JS, Node.js, Python, HTML/CSS, Power BI, SQL e Java.</p>
+        <div class="stack">
+          <span class="chip">JavaScript</span>
+          <span class="chip">Node.js</span>
+          <span class="chip">Python</span>
+          <span class="chip">HTML/CSS</span>
+          <span class="chip">Power BI</span>
+          <span class="chip">SQL</span>
+          <span class="chip">Java</span>
+        </div>
+        <div class="cta">
+          <a id="gh-link" class="btn primary" href="#" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="btn" href="#contato">Fale comigo</a>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Últimos destaques</h2>
+        <ul class="small" style="margin:0; padding-left:18px; color:var(--muted)">
+          <li>Dashboard Power BI com ciclo 26–25 e classificação ABC dinâmica.</li>
+          <li>API Node.js + SQL Server para relatórios de vendas (Protheus).</li>
+          <li>Automação Python para ETL e tratamento de dados "+ limpinho".</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="projetos">
+      <h2>Projetos</h2>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="JS">JS</button>
+        <button class="filter-btn" data-filter="NodeJS">NodeJS</button>
+        <button class="filter-btn" data-filter="Python">Python</button>
+        <button class="filter-btn" data-filter="HTML/CSS">HTML/CSS</button>
+        <button class="filter-btn" data-filter="PowerBI">PowerBI</button>
+        <button class="filter-btn" data-filter="SQL">SQL</button>
+        <button class="filter-btn" data-filter="Java">Java</button>
+      </div>
+
+      <div class="grid" id="grid">
+        <!-- Exemplo de card; duplique e ajuste os data-tags -->
+        <article class="project" data-tags="JS,HTML/CSS">
+          <h3>Landing responsiva</h3>
+          <p>Site estático rápido com acessibilidade, SEO básico e dark mode.</p>
+          <div class="tags"><span class="tag">JS</span><span class="tag">HTML/CSS</span></div>
+          <a class="btn small" href="#" target="_blank" rel="noreferrer">Ver repositório</a>
+        </article>
+        <article class="project" data-tags="NodeJS,SQL">
+          <h3>API Vendas Protheus</h3>
+          <p>Endpoints Node.js (Express) consultando SQL Server para KPIs.</p>
+          <div class="tags"><span class="tag">NodeJS</span><span class="tag">SQL</span></div>
+          <a class="btn small" href="#" target="_blank" rel="noreferrer">Ver repositório</a>
+        </article>
+        <article class="project" data-tags="PowerBI,SQL">
+          <h3>BI Cobertura & Ruptura</h3>
+          <p>Dashboard com ciclo 26–25, metas e curva ABC por grupo.</p>
+          <div class="tags"><span class="tag">PowerBI</span><span class="tag">SQL</span></div>
+          <a class="btn small" href="#" target="_blank" rel="noreferrer">Ver repositório</a>
+        </article>
+        <article class="project" data-tags="Python,SQL">
+          <h3>ETL Python</h3>
+          <p>Scripts de limpeza, unificação e carga incremental para DW.</p>
+          <div class="tags"><span class="tag">Python</span><span class="tag">SQL</span></div>
+          <a class="btn small" href="#" target="_blank" rel="noreferrer">Ver repositório</a>
+        </article>
+        <article class="project" data-tags="Java">
+          <h3>API Java Spring Boot</h3>
+          <p>CRUD de produtos com pagination e testes.</p>
+          <div class="tags"><span class="tag">Java</span></div>
+          <a class="btn small" href="#" target="_blank" rel="noreferrer">Ver repositório</a>
+        </article>
+        <article class="project" data-tags="JS,NodeJS">
+          <h3>CLI Node</h3>
+          <p>Ferramenta de linha de comando para gerar relatórios locais.</p>
+          <div class="tags"><span class="tag">NodeJS</span><span class="tag">JS</span></div>
+          <a class="btn small" href="#" target="_blank" rel="noreferrer">Ver repositório</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="sobre" style="margin-top:36px">
+      <h2>Sobre</h2>
+      <p class="small" style="color:var(--muted)">Sou desenvolvedor focado em dados e automações, com experiência em Protheus/TOTVS (SQL Server), ETL em Python, dashboards Power BI e aplicações web com JS/Node. Curto escrever documentação clara e transformar requisitos em entregas confiáveis.</p>
+    </section>
+
+    <section id="skills" style="margin-top:36px">
+      <h2>Skills</h2>
+      <div class="grid">
+        <div class="project">
+          <h3>JavaScript / Node.js</h3>
+          <p class="small">APIs REST, ETL, CLIs, automações, testes.</p>
+          <div class="tags"><span class="tag">Express</span><span class="tag">TypeScript</span><span class="tag">MDX</span></div>
+        </div>
+        <div class="project">
+          <h3>Python</h3>
+          <p class="small">ETL, automação, análise, integração com SQL Server.</p>
+          <div class="tags"><span class="tag">Pandas</span><span class="tag">Requests</span><span class="tag">FastAPI</span></div>
+        </div>
+        <div class="project">
+          <h3>HTML / CSS</h3>
+          <p class="small">Landing pages rápidas, acessibilidade e SEO básico.</p>
+          <div class="tags"><span class="tag">Semântica</span><span class="tag">Responsivo</span><span class="tag">Dark/Light</span></div>
+        </div>
+        <div class="project">
+          <h3>Power BI</h3>
+          <p class="small">Modelagem, DAX, ciclo 26–25, ABC dinâmica.</p>
+          <div class="tags"><span class="tag">DAX</span><span class="tag">M/Power Query</span><span class="tag">Storytelling</span></div>
+        </div>
+        <div class="project">
+          <h3>SQL</h3>
+          <p class="small">T‑SQL (Protheus), otimização, PIVOT/UNION ALL.</p>
+          <div class="tags"><span class="tag">SQL Server</span><span class="tag">TOTVS</span><span class="tag">Views</span></div>
+        </div>
+        <div class="project">
+          <h3>Java</h3>
+          <p class="small">APIs com Spring Boot e testes.</p>
+          <div class="tags"><span class="tag">Spring</span><span class="tag">JUnit</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="certificados" style="margin-top:36px">
+      <h2>Certificados</h2>
+      <ul class="small" style="color:var(--muted); margin-top:8px">
+        <li><strong>Microsoft Power BI</strong> — Data Modeling & DAX (Ano/Org) — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+        <li><strong>SQL Server</strong> — T‑SQL & Performance (Ano/Org) — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+        <li><strong>JavaScript/Node.js</strong> — APIs REST (Ano/Org) — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+        <li><strong>Python</strong> — Data Automation (Ano/Org) — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+      </ul>
+    </section>
+
+    <section id="contato" style="margin-top:36px">
+      <h2>Contato</h2>
+      <div class="cta">
+        <a class="btn primary" href="mailto:seu.email@exemplo.com">E‑mail</a>
+        <a class="btn" href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn</a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container small">© <span id="y"></span> Anderson Soares • Feito com HTML/CSS/JS e hospedado no GitHub Pages.</div>
+    </footer>
+  </main>
+
+  <script>
+    // Ano dinâmico
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // Filtro por tags
+    const buttons = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.project');
+    buttons.forEach(btn=>btn.addEventListener('click',()=>{
+      buttons.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const tag = btn.dataset.filter;
+      cards.forEach(card=>{
+        const tags = card.dataset.tags.split(',').map(s=>s.trim());
+        card.style.display = (tag==='all' || tags.includes(tag)) ? 'block' : 'none';
+      });
+    }));
+    <script>
+    // Configurações
+    const GITHUB_USER = 'SEU_USUARIO_GITHUB'; // <- troque pelo seu usuário GitHub
+    const INTEREST_LANGS = new Set(['JavaScript','TypeScript','Python','HTML','CSS','Java','Jupyter Notebook','SQL']);
+
+    // Ano dinâmico
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // Link GitHub
+    const gh = document.getElementById('gh-link');
+    if (gh) gh.href = `https://github.com/${GITHUB_USER}`;
+
+    // Filtro por tags (cards estáticos)
+    const buttons = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.project');
+    buttons.forEach(btn=>btn.addEventListener('click',()=>{
+      buttons.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const tag = btn.dataset.filter;
+      cards.forEach(card=>{
+        const tags = (card.dataset.tags||'').split(',').map(s=>s.trim());
+        card.style.display = (tag==='all' || tags.includes(tag)) ? 'block' : 'none';
+      });
+    }));
+
+    // ====== Carregar repositórios reais do GitHub ======
+    async function loadRepos(){
+      if(!GITHUB_USER || GITHUB_USER==='SEU_USUARIO_GITHUB') return; // evita chamada sem usuário
+      try{
+        const res = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=updated`);
+        const data = await res.json();
+        if(!Array.isArray(data)) return;
+
+        // Seleciona alguns repos relevantes por linguagem/interesse e estrelas
+        const filtered = data
+          .filter(r => !r.fork)
+          .filter(r => !r.archived)
+          .filter(r => !r.private)
+          .filter(r => !r.name.includes('.github.io'))
+          .filter(r => !r.name.toLowerCase().includes('deprecated'))
+          .sort((a,b)=> (b.stargazers_count||0) - (a.stargazers_count||0));
+
+        const grid = document.getElementById('grid');
+        if(!grid) return;
+
+        let count = 0;
+        for(const r of filtered){
+          const lang = r.language || 'JS';
+          // prioriza languages de interesse
+          if(!INTEREST_LANGS.has(lang) && count>6) continue;
+          const tags = [lang];
+          const card = document.createElement('article');
+          card.className = 'project';
+          card.dataset.tags = mapLangToFilter(lang);
+          card.innerHTML = `
+            <h3>${escapeHtml(r.name)}</h3>
+            <p>${escapeHtml(r.description || 'Projeto no GitHub')}</p>
+            <div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+            <a class="btn small" href="${r.html_url}" target="_blank" rel="noreferrer">Ver repositório</a>
+          `;
+          grid.appendChild(card);
+          count++; if(count>=12) break;
+        }
+      }catch(e){
+        console.warn('Falha ao carregar repositórios', e);
+      }
+    }
+
+    function mapLangToFilter(lang){
+      switch(lang){
+        case 'JavaScript': return 'JS';
+        case 'TypeScript': return 'JS';
+        case 'HTML':
+        case 'CSS':
+          return 'HTML/CSS';
+        case 'Python': return 'Python';
+        case 'Java': return 'Java';
+        case 'Jupyter Notebook': return 'Python';
+        case 'TSQL':
+        case 'PLSQL':
+        case 'SQL': return 'SQL';
+        default: return 'JS';
+      }
+    }
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+    }
+
+    loadRepos();
+  </script>
+</body>
+</html>
