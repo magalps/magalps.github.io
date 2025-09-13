@@ -44,7 +44,6 @@ body {
   padding: 32px 20px;
 }
 
-/* ---------------- HEADER ---------------- */
 header {
   position: sticky;
   top: 0;
@@ -100,7 +99,6 @@ header {
   box-shadow: 0 0 0 3px var(--ring);
 }
 
-/* ---------------- HERO ---------------- */
 .hero {
   display: grid;
   grid-template-columns: 1.1fr .9fr;
@@ -181,7 +179,6 @@ header {
   font-size: 14px;
 }
 
-/* ---------------- CONTENT ---------------- */
 h2 {
   font-size: clamp(22px, 3vw, 28px);
   margin: 18px 0;
@@ -227,10 +224,23 @@ h2 {
 }
 
 .project {
-  padding: 18px;
+  padding: 0;
   border-radius: 18px;
   border: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02));
+  overflow: hidden;
+}
+
+.project .cover {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, .02);
+}
+
+.project .body {
+  padding: 16px;
 }
 
 .project h3 {
@@ -263,7 +273,18 @@ h2 {
   margin-top: 12px;
 }
 
-/* ---------------- FOOTER ---------------- */
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-left: 8px;
+  color: var(--muted);
+}
+
 footer {
   border-top: 1px solid var(--border);
   margin-top: 40px;
