@@ -168,13 +168,14 @@ header {
 /* 🔑 Capa ajustada */
 .project .cover {
   width: 100%;
-  height: 180px;          /* altura fixa */
-  object-fit: contain;    /* mostra imagem inteira */
-  object-position: center;
+  height: 180px;
+  object-fit: contain;       /* mantém proporção */
+  object-position: center;   /* centraliza horizontal e vertical */
   display: block;
-  background: #0f172a;    /* fundo neutro atrás da imagem */
+  background: #0f172a;       /* fundo neutro */
+  padding: 10px;             /* opcional: dá respiro */
+  box-sizing: border-box;    /* padding conta no tamanho fixo */
 }
-
 /* fallback div.cover (quando não há imagem) */
 .project .cover:not(img) {
   display: flex;
