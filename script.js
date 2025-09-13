@@ -2,28 +2,27 @@
 const GITHUB_USER = 'magalps';
 const REPO = `${GITHUB_USER}.github.io`;
 const ROOT_DIR = 'Projetos';
+const BRANCH = 'main'; // fixe sua branch aqui
 
-const API_BASE = `https://api.github.com/repos/${GITHUB_USER}/${REPO}`;
-const RAW_CDN  = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${REPO}`; // usa CDN p/ README (não conta rate da API)
-const API_HEADERS = { 'Accept': 'application/vnd.github+json' };
+// CDN/APIs públicas (sem rate-limit chato)
+const RAW_CDN  = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${REPO}@${BRANCH}`;
+const DATA_API = `https://data.jsdelivr.com/v1/package/gh/${GITHUB_USER}/${REPO}@${BRANCH}`;
 
-const BRANCH_OVERRIDE = 'main';       // << evita 1 chamada extra p/ descobrir branch
 const MAX_PER_PAGE = 3;               // 3 cards por página (carrossel)
-const DESC_LIMIT   = 160;             // limite de caracteres da descrição
+const DESC_LIMIT   = 160;             // limite de caracteres na descrição
 const TREE_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 
 const INTEREST_TAGS = new Set(['JS','NodeJS','Python','HTML/CSS','PowerBI','SQL','Java']);
 const EXCLUDE_DIRS_RE = /(^|\/)(node_modules|\.venv|venv|__pycache__|dist|build|coverage|\.next|\.nuxt|\.cache|vendor|deps|third[-_]?party|site-packages|dist-packages|packages|\.husky|\.git)(\/|$)/i;
 
 /* ==================== Estado ==================== */
-let DEFAULT_BRANCH = BRANCH_OVERRIDE;
 let ALL_ITEMS = [];               // [{dir, readmePath, tags}]
 let CURRENT_FILTER = 'all';
 let CURRENT_PAGE = 0;
 const README_CACHE = new Map();   // path -> {title, description, imageUrl, progress}
 
 /* ==================== Utils ==================== */
-console.log('[portfolio] script.js carregado');
+console.log('[portfolio] script.js (jsDelivr) carregado');
 
 function clamp(str, n){ if(!str) return ''; return str.length>n ? str.slice(0,n-1)+'…' : str; }
 function extToLang(ext){
@@ -46,7 +45,7 @@ function lastSegment(path){ const parts = path.split('/').filter(Boolean); retur
 function enc(relPath){ return relPath.split('/').map(encodeURIComponent).join('/'); }
 function warn(...args){ console.warn('[portfolio]', ...args); }
 
-/* Marcadores do README (com fallback Markdown) */
+/* Marcadores do README (image: e fallback Markdown) */
 function getImageMarker(md){
   if(!md) return null;
   const m1 = md.match(/^(?:image|capa)\s*:\s*(\S+)/im);
@@ -63,16 +62,15 @@ function getProgressMarker(md){
 }
 
 /* ==================== Fetch helpers ==================== */
-async function safeFetchJSON(url, headers = API_HEADERS){
+async function fetchJSON(url){
   console.log('[portfolio] GET', url);
-  const res = await fetch(url, { headers });
+  const res = await fetch(url);
   console.log('[portfolio] ->', res.status, res.statusText);
   if(!res.ok) throw new Error(`HTTP ${res.status} em ${url}`);
   return res.json();
 }
-async function fetchReadmeRaw(path, branch){
-  // usa CDN (jsDelivr) para evitar rate da API e ter cache
-  const url = `${RAW_CDN}@${encodeURIComponent(branch)}/${enc(path)}`;
+async function fetchReadmeRaw(path){
+  const url = `${RAW_CDN}/${enc(path)}`;
   console.log('[portfolio] GET', url);
   const res = await fetch(url);
   console.log('[portfolio] ->', res.status, res.statusText);
@@ -80,11 +78,31 @@ async function fetchReadmeRaw(path, branch){
   return res.text();
 }
 
-/* ==================== GitHub API (apenas tree) ==================== */
-// cache da tree no localStorage
+/* ==================== Tree via jsDelivr (sem GitHub API) ==================== */
+// Estrutura do data.jsdelivr: { files: [ {name, type: 'file'|'directory', files?:[...] } ] }
+function flattenFiles(node, prefix = ''){
+  const acc = [];
+  if(!node) return acc;
+  const list = Array.isArray(node) ? node : node.files;
+  if(!Array.isArray(list)) return acc;
+
+  for(const f of list){
+    const p = prefix ? `${prefix}/${f.name}` : f.name;
+    if(f.type === 'file'){
+      acc.push({ path: p, type: 'blob' });
+    }else if(f.type === 'directory'){
+      if(!EXCLUDE_DIRS_RE.test(p)){
+        acc.push({ path: p+'/', type: 'tree' });
+        acc.push(...flattenFiles(f.files, p));
+      }
+    }
+  }
+  return acc;
+}
+
 function loadTreeFromCache(){
   try{
-    const raw = localStorage.getItem('portfolio_tree_cache');
+    const raw = localStorage.getItem('portfolio_tree_cache_jsdelivr');
     if(!raw) return null;
     const obj = JSON.parse(raw);
     if(!obj || !obj.ts || !obj.data) return null;
@@ -94,23 +112,20 @@ function loadTreeFromCache(){
 }
 function saveTreeToCache(data){
   try{
-    localStorage.setItem('portfolio_tree_cache', JSON.stringify({ts: Date.now(), data}));
+    localStorage.setItem('portfolio_tree_cache_jsdelivr', JSON.stringify({ts: Date.now(), data}));
   }catch{}
 }
 
-async function getRepoTree(branch){
+async function getRepoTreeViaCDN(){
   const cached = loadTreeFromCache();
-  if(cached){
-    console.log('[portfolio] usando tree do cache local');
-    return { tree: cached, truncated: false, fromCache: true };
-  }
-  const j = await safeFetchJSON(`${API_BASE}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
-  const tree = Array.isArray(j.tree) ? j.tree : [];
+  if(cached){ console.log('[portfolio] usando tree do cache local'); return cached; }
+  const data = await fetchJSON(DATA_API);          // 1 chamada
+  const tree = flattenFiles(data);                 // transforma em [{path,type}]
   saveTreeToCache(tree);
-  return { tree, truncated: !!j.truncated, fromCache: false };
+  return tree;
 }
 
-/* Encontrar projetos via tree (1 chamada) */
+/* Encontrar projetos: qualquer pasta em ROOT_DIR com README.md na raiz */
 function findProjectsWithReadmeFromTree(tree){
   const readmeRegex = /\/README(?:\.md)?$/i;
   const readmes = tree.filter(n =>
@@ -136,6 +151,7 @@ function parseReadme(md){
   const titleMatch = md.match(/^#\s+(.+)$/m);
   const title = titleMatch ? titleMatch[1].trim() : null;
 
+  // primeira descrição que não seja título/img/linha image:
   const blocks = md.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
   let description = null;
   for(const b of blocks){
@@ -152,7 +168,7 @@ function parseReadme(md){
   return {title, description, imageUrl, progress};
 }
 
-/* ==================== Tags (usa a tree já carregada) ==================== */
+/* ==================== Tags (usa a tree carregada) ==================== */
 function inferTagsForProject(projectDir, tree){
   const prefix = `${projectDir}/`;
   const files = tree
@@ -172,7 +188,7 @@ function inferTagsForProject(projectDir, tree){
 }
 
 /* ==================== Render (card) ==================== */
-function renderCard({projectDir, readmeMeta, tags, branch}){
+function renderCard({projectDir, readmeMeta, tags}){
   const name = lastSegment(projectDir);
   const rel = afterRoot(projectDir);
   const desc = clamp(readmeMeta.description || 'Projeto hospedado no GitHub Pages.', DESC_LIMIT);
@@ -195,7 +211,7 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
       <p>${escapeHtml(desc)}</p>
       <div class="tags" style="margin-top:10px">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
       <a class="btn small" href="https://${GITHUB_USER}.github.io/${ROOT_DIR}/${enc(rel)}/" target="_blank" rel="noreferrer">Ver projeto</a>
-      <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(branch)}/${ROOT_DIR}/${enc(rel)}" target="_blank" rel="noreferrer">Ver código</a>
+      <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/${BRANCH}/${ROOT_DIR}/${enc(rel)}" target="_blank" rel="noreferrer">Ver código</a>
     </div>`;
   return card;
 }
@@ -222,7 +238,7 @@ function ensureCarouselControls(){
   const next = ctr.querySelector('[data-next]');
   const info = ctr.querySelector('[data-info]');
   const all  = ctr.querySelector('[data-all]');
-  if(all) all.href = `https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(DEFAULT_BRANCH||'main')}/${ROOT_DIR}`;
+  if(all) all.href = `https://github.com/${GITHUB_USER}/${REPO}/tree/${BRANCH}/${ROOT_DIR}`;
   return {wrap:ctr, prev, next, info, all};
 }
 
@@ -231,18 +247,17 @@ function getFilteredItems(){
   return ALL_ITEMS.filter(it => it.tags.includes(CURRENT_FILTER));
 }
 
-// carrega (lazy) os READMEs somente dos itens visíveis
 async function ensureReadmesLoadedForSlice(slice){
   const promises = slice.map(async it=>{
     if(README_CACHE.has(it.readmePath)) return;
-    const md = await fetchReadmeRaw(it.readmePath, DEFAULT_BRANCH);
+    const md = await fetchReadmeRaw(it.readmePath);
     const meta = parseReadme(md || '');
     README_CACHE.set(it.readmePath, meta);
   });
   await Promise.all(promises);
 }
 
-async function renderPage(){
+async function renderPage(tree){
   const grid = document.getElementById('grid');
   if(!grid) return;
 
@@ -260,13 +275,12 @@ async function renderPage(){
     const start = CURRENT_PAGE * MAX_PER_PAGE;
     const slice = items.slice(start, start + MAX_PER_PAGE);
 
-    // lazy-load dos READMEs para a página atual
     await ensureReadmesLoadedForSlice(slice);
 
     for(const it of slice){
       const meta = README_CACHE.get(it.readmePath) || {};
       grid.appendChild(
-        renderCard({ projectDir: it.dir, readmeMeta: meta, tags: it.tags, branch: DEFAULT_BRANCH })
+        renderCard({ projectDir: it.dir, readmeMeta: meta, tags: it.tags })
       );
     }
   }
@@ -295,59 +309,53 @@ async function renderPage(){
     btn.classList.add('active');
     CURRENT_FILTER = btn.dataset.filter || 'all';
     CURRENT_PAGE = 0;
-    renderPage();
+    renderPage(_TREE);
   }));
 
+  // carrega a tree pela CDN (com cache local)
+  let _TREE = [];
   try{
-    // 1) Uma única chamada para obter a árvore inteira (com cache local)
-    const { tree } = await getRepoTree(DEFAULT_BRANCH);
-    console.log('[portfolio] tree blobs:', tree.length);
+    _TREE = await getRepoTreeViaCDN();
+    console.log('[portfolio] tree (jsDelivr) itens:', _TREE.length);
 
-    // 2) Descobrir projetos via tree (README em qualquer nível dentro de Projetos/)
-    const projects = findProjectsWithReadmeFromTree(tree);
-    console.log('[portfolio] projetos (via tree):', projects.length);
+    const projects = findProjectsWithReadmeFromTree(_TREE);
+    console.log('[portfolio] projetos:', projects.length);
 
     if (projects.length === 0){
       const grid = document.getElementById('grid');
       if (grid){
         grid.innerHTML = `<div class="project" style="padding:16px">
-          ⚠️ Nenhum projeto com <code>README.md</code> na raiz foi encontrado em <code>${ROOT_DIR}/</code>.
+          ⚠️ Nenhum projeto com <code>README.md</code> encontrado em <code>${ROOT_DIR}/</code>.
         </div>`;
       }
       ensureCarouselControls();
       return;
     }
 
-    // 3) Monta ALL_ITEMS (sem baixar README ainda)
     ALL_ITEMS = projects.map(({dir, readmePath}) => ({
       dir,
       readmePath,
-      tags: inferTagsForProject(dir, tree)
+      tags: inferTagsForProject(dir, _TREE)
     }));
 
-    // 4) Controles do carrossel
     const {prev, next} = ensureCarouselControls();
-    if(prev) prev.addEventListener('click', ()=>{ CURRENT_PAGE = Math.max(0, CURRENT_PAGE - 1); renderPage(); });
+    if(prev) prev.addEventListener('click', ()=>{ CURRENT_PAGE = Math.max(0, CURRENT_PAGE - 1); renderPage(_TREE); });
     if(next) next.addEventListener('click', ()=>{
       const total = getFilteredItems().length;
       const last = Math.max(0, Math.ceil(total / MAX_PER_PAGE) - 1);
       CURRENT_PAGE = Math.min(last, CURRENT_PAGE + 1);
-      renderPage();
+      renderPage(_TREE);
     });
 
-    // 5) Render inicial
-    await renderPage();
+    await renderPage(_TREE);
   }catch(e){
-    // Se der 403 aqui, é rate limit do endpoint de tree
-    warn('Erro no carregamento:', e.message);
+    warn('Erro no carregamento (CDN):', e.message);
     const grid = document.getElementById('grid');
     if (grid){
       grid.innerHTML = `<div class="project" style="padding:16px">
-        ⚠️ Limite da API do GitHub atingido (403). Tente novamente em alguns minutos.<br>
-        Dica: atualize a página mais tarde — usamos cache local por 6h para evitar novas chamadas.<br><br>
-        Você pode ver todos os projetos diretamente no GitHub:
+        ⚠️ Erro ao carregar lista de arquivos via CDN. Tente novamente mais tarde.<br>
         <a class="btn small" style="margin-top:8px" target="_blank" rel="noreferrer"
-           href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(DEFAULT_BRANCH||'main')}/${ROOT_DIR}">
+           href="https://github.com/${GITHUB_USER}/${REPO}/tree/${BRANCH}/${ROOT_DIR}">
           Abrir pasta ${ROOT_DIR} no GitHub
         </a>
       </div>`;
