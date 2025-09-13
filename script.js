@@ -4,28 +4,28 @@ const REPO = `${GITHUB_USER}.github.io`;
 const ROOT_DIR = 'Projetos';
 
 const API_BASE = `https://api.github.com/repos/${GITHUB_USER}/${REPO}`;
-const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}`;
+const RAW_CDN  = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${REPO}`; // usa CDN p/ README (não conta rate da API)
 const API_HEADERS = { 'Accept': 'application/vnd.github+json' };
-// const BRANCH_OVERRIDE = 'main'; // opcional
+
+const BRANCH_OVERRIDE = 'main';       // << evita 1 chamada extra p/ descobrir branch
+const MAX_PER_PAGE = 3;               // 3 cards por página (carrossel)
+const DESC_LIMIT   = 160;             // limite de caracteres da descrição
+const TREE_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 
 const INTEREST_TAGS = new Set(['JS','NodeJS','Python','HTML/CSS','PowerBI','SQL','Java']);
-
 const EXCLUDE_DIRS_RE = /(^|\/)(node_modules|\.venv|venv|__pycache__|dist|build|coverage|\.next|\.nuxt|\.cache|vendor|deps|third[-_]?party|site-packages|dist-packages|packages|\.husky|\.git)(\/|$)/i;
 
-const MAX_PER_PAGE = 3;          // 3 cards por página (carrossel)
-const DESC_LIMIT   = 160;        // limite de caracteres da descrição
-
-/* ==================== Estado do carrossel ==================== */
-let DEFAULT_BRANCH = null;
-let ALL_ITEMS = [];              // [{dir, readmeMeta, tags}]
+/* ==================== Estado ==================== */
+let DEFAULT_BRANCH = BRANCH_OVERRIDE;
+let ALL_ITEMS = [];               // [{dir, readmePath, tags}]
 let CURRENT_FILTER = 'all';
-let CURRENT_PAGE = 0;            // index da página dentro do filtro
+let CURRENT_PAGE = 0;
+const README_CACHE = new Map();   // path -> {title, description, imageUrl, progress}
 
 /* ==================== Utils ==================== */
 console.log('[portfolio] script.js carregado');
 
 function clamp(str, n){ if(!str) return ''; return str.length>n ? str.slice(0,n-1)+'…' : str; }
-
 function extToLang(ext){
   switch(ext){
     case 'js': case 'mjs': return 'JS';
@@ -35,7 +35,7 @@ function extToLang(ext){
     case 'sql': case 'psql': case 'pgsql': return 'SQL';
     case 'java': return 'Java';
     case 'pbix': case 'pbit': return 'PowerBI';
-    case 'm': return 'PowerBI'; // Power Query M
+    case 'm': return 'PowerBI';
     default: return null;
   }
 }
@@ -46,19 +46,23 @@ function lastSegment(path){ const parts = path.split('/').filter(Boolean); retur
 function enc(relPath){ return relPath.split('/').map(encodeURIComponent).join('/'); }
 function warn(...args){ console.warn('[portfolio]', ...args); }
 
-/* Marcadores do README */
+/* Marcadores do README (com fallback Markdown) */
 function getImageMarker(md){
   if(!md) return null;
-  // 1) padrão "image:" ou "capa:"
   const m1 = md.match(/^(?:image|capa)\s*:\s*(\S+)/im);
   if(m1) return m1[1];
-  // 2) fallback para sintaxe markdown ![alt](url)
-  const m2 = md.match(/!\[.*?\]\((.*?)\)/);
+  const m2 = md.match(/!\[.*?\]\((.*?)\)/); // padrão MD
   if(m2) return m2[1];
   return null;
 }
+function getProgressMarker(md){
+  const m=(md||'').match(/^(?:progress|feito|conclusao|conclusão)\s*:\s*(\d{1,3})%/im);
+  if(m) return Math.min(100, parseInt(m[1],10));
+  const loose=(md||'').match(/(\d{1,3})\s*%/);
+  return loose ? Math.min(100, parseInt(loose[1],10)) : null;
+}
 
-/* ==================== Fetch helpers (verbosos) ==================== */
+/* ==================== Fetch helpers ==================== */
 async function safeFetchJSON(url, headers = API_HEADERS){
   console.log('[portfolio] GET', url);
   const res = await fetch(url, { headers });
@@ -66,7 +70,9 @@ async function safeFetchJSON(url, headers = API_HEADERS){
   if(!res.ok) throw new Error(`HTTP ${res.status} em ${url}`);
   return res.json();
 }
-async function safeFetchText(url){
+async function fetchReadmeRaw(path, branch){
+  // usa CDN (jsDelivr) para evitar rate da API e ter cache
+  const url = `${RAW_CDN}@${encodeURIComponent(branch)}/${enc(path)}`;
   console.log('[portfolio] GET', url);
   const res = await fetch(url);
   console.log('[portfolio] ->', res.status, res.statusText);
@@ -74,55 +80,54 @@ async function safeFetchText(url){
   return res.text();
 }
 
-/* ==================== GitHub API ==================== */
-async function getDefaultBranch(){
-  if (typeof BRANCH_OVERRIDE !== 'undefined') return BRANCH_OVERRIDE;
-  const meta = await safeFetchJSON(API_BASE);
-  return meta.default_branch || 'main';
+/* ==================== GitHub API (apenas tree) ==================== */
+// cache da tree no localStorage
+function loadTreeFromCache(){
+  try{
+    const raw = localStorage.getItem('portfolio_tree_cache');
+    if(!raw) return null;
+    const obj = JSON.parse(raw);
+    if(!obj || !obj.ts || !obj.data) return null;
+    if (Date.now() - obj.ts > TREE_CACHE_TTL_MS) return null;
+    return obj.data;
+  }catch{ return null; }
+}
+function saveTreeToCache(data){
+  try{
+    localStorage.setItem('portfolio_tree_cache', JSON.stringify({ts: Date.now(), data}));
+  }catch{}
 }
 
-/* Árvore: só para inferir tags */
 async function getRepoTree(branch){
+  const cached = loadTreeFromCache();
+  if(cached){
+    console.log('[portfolio] usando tree do cache local');
+    return { tree: cached, truncated: false, fromCache: true };
+  }
   const j = await safeFetchJSON(`${API_BASE}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
-  return { tree: Array.isArray(j.tree) ? j.tree : [], truncated: !!j.truncated };
+  const tree = Array.isArray(j.tree) ? j.tree : [];
+  saveTreeToCache(tree);
+  return { tree, truncated: !!j.truncated, fromCache: false };
 }
 
-/* Descobre projetos via /contents (varredura completa em Projetos/) */
-async function findProjectsWithReadmeViaContents(branch){
+/* Encontrar projetos via tree (1 chamada) */
+function findProjectsWithReadmeFromTree(tree){
+  const readmeRegex = /\/README(?:\.md)?$/i;
+  const readmes = tree.filter(n =>
+    n.type === 'blob' &&
+    n.path.startsWith(`${ROOT_DIR}/`) &&
+    readmeRegex.test(n.path) &&
+    !EXCLUDE_DIRS_RE.test(n.path)
+  );
+  const seen = new Set();
   const projects = [];
-  const queue = [ROOT_DIR];
-  const visited = new Set(queue);
-
-  while(queue.length){
-    const dir = queue.shift();
-    if(EXCLUDE_DIRS_RE.test(dir)) continue;
-
-    let list;
-    try { list = await safeFetchJSON(`${API_BASE}/contents/${enc(dir)}?ref=${encodeURIComponent(branch)}`); }
-    catch(e){ warn('contents falhou em', dir, e.message); continue; }
-
-    if(!Array.isArray(list)) continue;
-
-    // projeto = pasta que contém README na raiz
-    const hasReadme = list.some(i => i.type==='file' && /^README(?:\.md)?$/i.test(i.name));
-    if(hasReadme){
-      projects.push({ dir, readmePath: `${dir}/README.md` });
-      // ainda descemos para pegar subprojetos aninhados, caso existam
-    }
-
-    // continua descendo em subpastas
-    for(const item of list){
-      if(item.type === 'dir'){
-        const nd = `${dir}/${item.name}`;
-        if(!visited.has(nd)){ visited.add(nd); queue.push(nd); }
-      }
-    }
+  for(const r of readmes){
+    const dir = r.path.replace(/\/README(?:\.md)?$/i, '');
+    if(seen.has(dir)) continue;
+    seen.add(dir);
+    projects.push({ dir, readmePath: r.path });
   }
   return projects;
-}
-
-async function fetchRaw(path, branch){
-  return safeFetchText(`${RAW_BASE}/${encodeURIComponent(branch)}/${enc(path)}`);
 }
 
 /* ==================== README parser ==================== */
@@ -131,7 +136,6 @@ function parseReadme(md){
   const titleMatch = md.match(/^#\s+(.+)$/m);
   const title = titleMatch ? titleMatch[1].trim() : null;
 
-  // primeira descrição que não seja título/img/linha image:
   const blocks = md.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
   let description = null;
   for(const b of blocks){
@@ -148,7 +152,7 @@ function parseReadme(md){
   return {title, description, imageUrl, progress};
 }
 
-/* ==================== Tags por projeto (usa a árvore) ==================== */
+/* ==================== Tags (usa a tree já carregada) ==================== */
 function inferTagsForProject(projectDir, tree){
   const prefix = `${projectDir}/`;
   const files = tree
@@ -170,7 +174,7 @@ function inferTagsForProject(projectDir, tree){
 /* ==================== Render (card) ==================== */
 function renderCard({projectDir, readmeMeta, tags, branch}){
   const name = lastSegment(projectDir);
-  const rel = afterRoot(projectDir); // remove "Projetos/"
+  const rel = afterRoot(projectDir);
   const desc = clamp(readmeMeta.description || 'Projeto hospedado no GitHub Pages.', DESC_LIMIT);
 
   const card = document.createElement('article');
@@ -186,17 +190,17 @@ function renderCard({projectDir, readmeMeta, tags, branch}){
     : `<span class="progress">⚠️ sem progresso</span>`;
 
   card.innerHTML = `${cover}
-    <div class="body">
-      <h3>${escapeHtml(readmeMeta.title || name)} ${progressBadge}</h3>
+    <div class="body" style="padding:14px">
+      <h3 style="margin:6px 0 6px;font-size:18px">${escapeHtml(readmeMeta.title || name)} ${progressBadge}</h3>
       <p>${escapeHtml(desc)}</p>
-      <div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+      <div class="tags" style="margin-top:10px">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
       <a class="btn small" href="https://${GITHUB_USER}.github.io/${ROOT_DIR}/${enc(rel)}/" target="_blank" rel="noreferrer">Ver projeto</a>
       <a class="btn small" href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(branch)}/${ROOT_DIR}/${enc(rel)}" target="_blank" rel="noreferrer">Ver código</a>
     </div>`;
   return card;
 }
 
-/* ==================== UI do carrossel ==================== */
+/* ==================== Carrossel & Filtro ==================== */
 function ensureCarouselControls(){
   const section = document.querySelector('#projetos');
   if(!section) return {wrap:null, prev:null, next:null, info:null, all:null};
@@ -227,14 +231,24 @@ function getFilteredItems(){
   return ALL_ITEMS.filter(it => it.tags.includes(CURRENT_FILTER));
 }
 
-function renderPage(){
+// carrega (lazy) os READMEs somente dos itens visíveis
+async function ensureReadmesLoadedForSlice(slice){
+  const promises = slice.map(async it=>{
+    if(README_CACHE.has(it.readmePath)) return;
+    const md = await fetchReadmeRaw(it.readmePath, DEFAULT_BRANCH);
+    const meta = parseReadme(md || '');
+    README_CACHE.set(it.readmePath, meta);
+  });
+  await Promise.all(promises);
+}
+
+async function renderPage(){
   const grid = document.getElementById('grid');
   if(!grid) return;
 
   const items = getFilteredItems();
   const total = items.length;
 
-  // corrige página fora do range
   const totalPages = Math.max(1, Math.ceil(total / MAX_PER_PAGE));
   if(CURRENT_PAGE > totalPages - 1) CURRENT_PAGE = totalPages - 1;
   if(CURRENT_PAGE < 0) CURRENT_PAGE = 0;
@@ -245,14 +259,18 @@ function renderPage(){
   }else{
     const start = CURRENT_PAGE * MAX_PER_PAGE;
     const slice = items.slice(start, start + MAX_PER_PAGE);
+
+    // lazy-load dos READMEs para a página atual
+    await ensureReadmesLoadedForSlice(slice);
+
     for(const it of slice){
+      const meta = README_CACHE.get(it.readmePath) || {};
       grid.appendChild(
-        renderCard({ projectDir: it.dir, readmeMeta: it.readmeMeta, tags: it.tags, branch: DEFAULT_BRANCH })
+        renderCard({ projectDir: it.dir, readmeMeta: meta, tags: it.tags, branch: DEFAULT_BRANCH })
       );
     }
   }
 
-  // controles
   const {prev, next, info} = ensureCarouselControls();
   if(info){
     const totalPages = Math.max(1, Math.ceil(total / MAX_PER_PAGE));
@@ -270,46 +288,44 @@ function renderPage(){
   const y = document.getElementById('y'); if(y) y.textContent = new Date().getFullYear();
   const gh = document.getElementById('gh-link'); if (gh) gh.href = `https://github.com/${GITHUB_USER}`;
 
-  // filtro UI
+  // Filtros
   const buttons = document.querySelectorAll('.filter-btn');
   buttons.forEach(btn=>btn.addEventListener('click',()=>{
     buttons.forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     CURRENT_FILTER = btn.dataset.filter || 'all';
-    CURRENT_PAGE = 0;           // reset para 1ª página ao mudar filtro
+    CURRENT_PAGE = 0;
     renderPage();
   }));
 
   try{
-    DEFAULT_BRANCH = await getDefaultBranch();
-    console.log('[portfolio] default branch:', DEFAULT_BRANCH);
-
-    // 1) árvore para tags
+    // 1) Uma única chamada para obter a árvore inteira (com cache local)
     const { tree } = await getRepoTree(DEFAULT_BRANCH);
     console.log('[portfolio] tree blobs:', tree.length);
 
-    // 2) projetos via /contents
-    const projects = await findProjectsWithReadmeViaContents(DEFAULT_BRANCH);
-    console.log('[portfolio] projetos (via contents):', projects.length);
+    // 2) Descobrir projetos via tree (README em qualquer nível dentro de Projetos/)
+    const projects = findProjectsWithReadmeFromTree(tree);
+    console.log('[portfolio] projetos (via tree):', projects.length);
 
     if (projects.length === 0){
       const grid = document.getElementById('grid');
       if (grid){
-        grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Nenhum projeto com README.md em <code>${ROOT_DIR}/</code>.</div>`;
+        grid.innerHTML = `<div class="project" style="padding:16px">
+          ⚠️ Nenhum projeto com <code>README.md</code> na raiz foi encontrado em <code>${ROOT_DIR}/</code>.
+        </div>`;
       }
+      ensureCarouselControls();
       return;
     }
 
-    // 3) monta ALL_ITEMS (metadados + tags)
-    ALL_ITEMS = [];
-    for (const {dir, readmePath} of projects){
-      const md = await fetchRaw(readmePath, DEFAULT_BRANCH);
-      const readmeMeta = parseReadme(md || '');
-      const tags = inferTagsForProject(dir, tree);
-      ALL_ITEMS.push({ dir, readmeMeta, tags });
-    }
+    // 3) Monta ALL_ITEMS (sem baixar README ainda)
+    ALL_ITEMS = projects.map(({dir, readmePath}) => ({
+      dir,
+      readmePath,
+      tags: inferTagsForProject(dir, tree)
+    }));
 
-    // 4) cria controles do carrossel e listeners
+    // 4) Controles do carrossel
     const {prev, next} = ensureCarouselControls();
     if(prev) prev.addEventListener('click', ()=>{ CURRENT_PAGE = Math.max(0, CURRENT_PAGE - 1); renderPage(); });
     if(next) next.addEventListener('click', ()=>{
@@ -319,13 +335,23 @@ function renderPage(){
       renderPage();
     });
 
-    // 5) render inicial
-    renderPage();
+    // 5) Render inicial
+    await renderPage();
   }catch(e){
+    // Se der 403 aqui, é rate limit do endpoint de tree
     warn('Erro no carregamento:', e.message);
     const grid = document.getElementById('grid');
     if (grid){
-      grid.innerHTML = `<div class="project" style="padding:16px">⚠️ Erro ao carregar projetos. Veja o Console.</div>`;
+      grid.innerHTML = `<div class="project" style="padding:16px">
+        ⚠️ Limite da API do GitHub atingido (403). Tente novamente em alguns minutos.<br>
+        Dica: atualize a página mais tarde — usamos cache local por 6h para evitar novas chamadas.<br><br>
+        Você pode ver todos os projetos diretamente no GitHub:
+        <a class="btn small" style="margin-top:8px" target="_blank" rel="noreferrer"
+           href="https://github.com/${GITHUB_USER}/${REPO}/tree/${encodeURIComponent(DEFAULT_BRANCH||'main')}/${ROOT_DIR}">
+          Abrir pasta ${ROOT_DIR} no GitHub
+        </a>
+      </div>`;
     }
+    ensureCarouselControls();
   }
 })();
