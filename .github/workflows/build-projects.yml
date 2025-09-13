@@ -1,0 +1,34 @@
+name: Build projects manifest
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "Projetos/**"
+      - "scripts/generate-projects.mjs"
+      - ".github/workflows/build-projects.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate projects.json
+        run: |
+          node -v
+          mkdir -p scripts
+          node scripts/generate-projects.mjs
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update projects.json"
+          file_pattern: "projects.json"
