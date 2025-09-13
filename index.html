@@ -1,95 +1,115 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Anderson Soares • Portfólio</title>
-<meta name="description" content="Portfólio técnico de Anderson Soares – JS, Node.js, Python, HTML/CSS, Power BI, SQL e Java." />
-<meta property="og:title" content="Portfólio • Anderson Soares" />
-<meta property="og:description" content="JS • Node.js • Python • HTML/CSS • Power BI • SQL • Java" />
-<meta property="og:type" content="website" />
-<meta name="theme-color" content="#0ea5e9" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
-<link rel="stylesheet" href="style.css">
-<script defer src="script.js?v=debug1"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anderson Soares • Portfólio</title>
+  <meta name="description" content="Portfólio técnico de Anderson Soares – JS, Node.js, Python, HTML/CSS, Power BI, SQL e Java." />
+  <meta property="og:title" content="Portfólio • Anderson Soares" />
+  <meta property="og:description" content="JS • Node.js • Python • HTML/CSS • Power BI • SQL • Java" />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-<nav class="nav container">
-<div class="brand"><span class="badge"><span class="dot"></span>Disponível para projetos</span></div>
-<div>
-<a href="#projetos">Projetos</a>
-<a href="#sobre">Sobre</a>
-<a href="#contato">Contato</a>
-</div>
-</nav>
-</header>
+  <header>
+    <nav class="nav container">
+      <div class="brand">
+        <span class="badge"><span class="dot"></span>Disponível para projetos</span>
+      </div>
+      <div>
+        <a href="#projetos">Projetos</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#contato">Contato</a>
+      </div>
+    </nav>
+  </header>
 
+  <main class="container">
+    <section class="hero">
+      <div class="card">
+        <h1 class="title">Anderson Soares</h1>
+        <p class="subtitle">Desenvolvedor & Analista de Dados — JS, Node.js, Python, HTML/CSS, Power BI, SQL e Java.</p>
+        <div class="stack">
+          <span class="chip">JavaScript</span>
+          <span class="chip">Node.js</span>
+          <span class="chip">Python</span>
+          <span class="chip">HTML/CSS</span>
+          <span class="chip">Power BI</span>
+          <span class="chip">SQL</span>
+          <span class="chip">Java</span>
+        </div>
+        <div class="cta">
+          <a id="gh-link" class="btn primary" href="#" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="btn" href="#contato">Fale comigo</a>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Últimos destaques</h2>
+        <ul class="small" style="margin:0; padding-left:18px; color:var(--muted)">
+          <li>Dashboard Power BI com ciclo 26–25 e classificação ABC dinâmica.</li>
+          <li>API Node.js + SQL Server para relatórios de vendas (Protheus).</li>
+          <li>Automação Python para ETL e tratamento de dados "+ limpinho".</li>
+        </ul>
+      </div>
+    </section>
 
-<main class="container">
-<section class="hero">
-<div class="card">
-<h1 class="title">Anderson Soares</h1>
-<p class="subtitle">Desenvolvedor & Analista de Dados — JS, Node.js, Python, HTML/CSS, Power BI, SQL e Java.</p>
-<div class="stack">
-<span class="chip">JavaScript</span>
-<span class="chip">Node.js</span>
-<span class="chip">Python</span>
-<span class="chip">HTML/CSS</span>
-<span class="chip">Power BI</span>
-<span class="chip">SQL</span>
-<span class="chip">Java</span>
-</div>
-<div class="cta">
-<a id="gh-link" class="btn primary" href="#" target="_blank" rel="noreferrer">GitHub</a>
-<a class="btn" href="#contato">Fale comigo</a>
-</div>
-</div>
-<div class="card">
-<h2>Últimos destaques</h2>
-<ul class="small" style="margin:0; padding-left:18px; color:var(--muted)">
-<li>Dashboard Power BI com ciclo 26–25 e classificação ABC dinâmica.</li>
-<li>API Node.js + SQL Server para relatórios de vendas (Protheus).</li>
-<li>Automação Python para ETL e tratamento de dados "+ limpinho".</li>
-</ul>
-</div>
-</section>
+    <section id="projetos">
+      <h2>Projetos</h2>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="JS">JS</button>
+        <button class="filter-btn" data-filter="NodeJS">NodeJS</button>
+        <button class="filter-btn" data-filter="Python">Python</button>
+        <button class="filter-btn" data-filter="HTML/CSS">HTML/CSS</button>
+        <button class="filter-btn" data-filter="PowerBI">PowerBI</button>
+        <button class="filter-btn" data-filter="SQL">SQL</button>
+        <button class="filter-btn" data-filter="Java">Java</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
 
+    <section id="sobre" style="margin-top:36px">
+      <h2>Sobre</h2>
+      <p class="small" style="color:var(--muted)">
+        Sou desenvolvedor focado em dados e automações, com experiência em Protheus/TOTVS (SQL Server), ETL em Python, dashboards Power BI e aplicações web com JS/Node.
+        Curto escrever documentação clara e transformar requisitos em entregas confiáveis.
+      </p>
+    </section>
 
-<section id="projetos">
-<h2>Projetos</h2>
-<div class="filters">
-<button class="filter-btn active" data-filter="all">Todos</button>
-<button class="filter-btn" data-filter="JS">JS</button>
-<button class="filter-btn" data-filter="NodeJS">NodeJS</button>
-<button class="filter-btn" data-filter="Python">Python</button>
-<button class="filter-btn" data-filter="HTML/CSS">HTML/CSS</button>
-<button class="filter-btn" data-filter="PowerBI">PowerBI</button>
-<button class="filter-btn" data-filter="SQL">SQL</button>
-<button class="filter-btn" data-filter="Java">Java</button>
-</div>
-<div class="grid" id="grid"></div>
-</section>
+    <section id="skills" style="margin-top:36px">
+      <h2>Skills</h2>
+      <div class="grid">
+        <!-- cards de skills -->
+      </div>
+    </section>
 
+    <section id="certificados" style="margin-top:36px">
+      <h2>Certificados</h2>
+      <ul class="small" style="color:var(--muted); margin-top:8px">
+        <li><strong>Microsoft Power BI</strong> — Data Modeling & DAX — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+        <li><strong>SQL Server</strong> — T-SQL & Performance — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+        <li><strong>JavaScript/Node.js</strong> — APIs REST — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+      </ul>
+    </section>
 
-<section id="sobre" style="margin-top:36px">
-<h2>Sobre</h2>
-<p class="small" style="color:var(--muted)">Sou desenvolvedor focado em dados e automações, com experiência em Protheus/TOTVS (SQL Server), ETL em Python, dashboards Power BI e aplicações web com JS/Node. Curto escrever documentação clara e transformar requisitos em entregas confiáveis.</p>
-</section>
+    <section id="contato" style="margin-top:36px">
+      <h2>Contato</h2>
+      <div class="cta">
+        <a class="btn primary" href="mailto:seu.email@exemplo.com">E-mail</a>
+        <a class="btn" href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn</a>
+      </div>
+    </section>
 
+    <footer>
+      <div class="container small">
+        © <span id="y"></span> Anderson Soares • Feito com HTML/CSS/JS e hospedado no GitHub Pages.
+      </div>
+    </footer>
+  </main>
 
-<section id="skills" style="margin-top:36px">
-<h2>Skills</h2>
-<div class="grid">
-<!-- cards de skills -->
-</div>
-</section>
-
-
-<section id="certificados" style="margin-top:36px">
-<h2>Certificados</h2>
-<ul class="small" style="color:var(--muted); margin-top:8px">
-<li><strong>Microsoft Power BI</strong> — Data Modeling & DAX — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
-<li><strong>SQL Server</strong> — T‑SQL & Performance — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
-<li><strong>JavaScript/Node.js</strong> — APIs REST — <a href="#" target="_blank" rel="noreferrer">ver credencial</a></li>
+  <!-- IMPORTANTE: seu script JS aqui -->
+  <script defer src="script.js?v=1"></script>
+</body>
 </html>
