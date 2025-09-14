@@ -118,7 +118,8 @@ for (let i = 0; i < navigationLinks.length; i++) {
    ========================================================= */
 
 (function initPortfolio() {
-  const PROJECTS_JSON_URL = `./projects.json?v=${Date.now()}`; // cache-busting
+  const PROJECTS_JSON_URL = `${location.origin}/projects.json?v=${Date.now()}`;
+  // Tecnologias disponíveis (devem corresponder às tags usadas em projects.json)
   const techFilters = ["All", "JS", "NodeJS", "Python", "HTML/CSS", "PBI", "SQL", "Java"];
 
   // Contêineres do tema
