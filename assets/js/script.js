@@ -114,30 +114,29 @@ for (let i = 0; i < navigationLinks.length; i++) {
 }
 
 /* =========================================================
-   Loader de Portfólio (projects.json) para o tema vCard
-   - Renderiza cards
+   Loader de Portfólio (projects.json)
+   - Renderiza cards no tema
    - Filtros por tecnologia (tags)
    ========================================================= */
 
 (function initPortfolio() {
-  // Ajuste o caminho se o projects.json estiver em outro lugar
-  const PROJECTS_JSON_URL = `${location.origin}/projects.json?v=${Date.now()}`;
+  const PROJECTS_JSON_URL = `./projects.json?v=${Date.now()}`; // cache-busting
   const techFilters = ["All", "JS", "NodeJS", "Python", "HTML/CSS", "PBI", "SQL", "Java"];
 
-  // Contêineres do tema (na página Portfolio)
-  const portfolioRoot = document.querySelector("article.portfolio");
-  if (!portfolioRoot) return; // página não existe
+  // Contêineres do tema
+  const filterList = document.querySelector(".portfolio .filter-list");
+  const selectList = document.querySelector(".portfolio .select-list");
+  const selectValueEl = document.querySelector(".portfolio [data-selecct-value]");
+  const projectList = document.querySelector(".portfolio .project-list");
 
-  const filterList = portfolioRoot.querySelector(".filter-list");
-  const selectList = portfolioRoot.querySelector(".select-list");
-  const selectValueEl = portfolioRoot.querySelector("[data-selecct-value]");
-  const projectList = portfolioRoot.querySelector(".project-list");
-  if (!projectList) return;
+  if (!projectList) return; // página não encontrada/alterada
 
-  // Recria os filtros com as tecnologias desejadas
+  // 1) Monta UI dos filtros (substitui existentes pelo conjunto de tecnologias)
   if (filterList) {
     filterList.innerHTML = techFilters
-      .map((t, i) => `<li class="filter-item"><button data-filter-btn class="${i === 0 ? "active" : ""}">${t}</button></li>`)
+      .map((t, idx) =>
+        `<li class="filter-item"><button data-filter-btn class="${idx === 0 ? "active" : ""}">${t}</button></li>`
+      )
       .join("");
   }
   if (selectList) {
@@ -147,10 +146,10 @@ for (let i = 0; i < navigationLinks.length; i++) {
   }
   if (selectValueEl) selectValueEl.textContent = "Select category";
 
-  // Conecta eventos nos novos filtros
-  const newFilterBtns = portfolioRoot.querySelectorAll("[data-filter-btn]");
+  // Reconecta handlers agora que recriamos a UI de filtros
+  const newFilterBtns = document.querySelectorAll(".portfolio [data-filter-btn]");
   let lastBtn = newFilterBtns[0];
-  newFilterBtns.forEach((btn) => {
+  newFilterBtns.forEach((btn) =>
     btn.addEventListener("click", () => {
       const val = btn.textContent.trim().toLowerCase();
       if (selectValueEl) selectValueEl.textContent = btn.textContent.trim();
@@ -158,98 +157,85 @@ for (let i = 0; i < navigationLinks.length; i++) {
       lastBtn?.classList.remove("active");
       btn.classList.add("active");
       lastBtn = btn;
-    });
-  });
+    })
+  );
 
-  const newSelectItems = portfolioRoot.querySelectorAll("[data-select-item]");
-  newSelectItems.forEach((it) => {
+  const newSelectItems = document.querySelectorAll(".portfolio [data-select-item]");
+  newSelectItems.forEach((it) =>
     it.addEventListener("click", () => {
       const val = it.textContent.trim().toLowerCase();
       if (selectValueEl) selectValueEl.textContent = it.textContent.trim();
       elementToggleFunc(select);
       filterFunc(val);
-    });
-  });
+    })
+  );
 
-  // Placeholder inline (evita 404)
-  const PLACEHOLDER =
-    'data:image/svg+xml;utf8,' +
-    encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
-        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#222"/><stop offset="1" stop-color="#111"/></linearGradient></defs>
-        <rect width="100%" height="100%" fill="url(#g)"/>
-        <g fill="#FFC857" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
-          <text x="400" y="230" font-size="28">Sem imagem</text>
-          <text x="400" y="270" font-size="16" fill="#bbb">projects.json • portfolio</text>
-        </g>
-      </svg>`
-    );
-
-  // Busca e renderiza projetos
+  // 2) Busca e renderiza
   fetch(PROJECTS_JSON_URL)
     .then(async (res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     })
     .then((data) => {
-      const items = Array.isArray(data) ? data : (Array.isArray(data.projects) ? data.projects : []);
+      const items = Array.isArray(data?.projects) ? data.projects : [];
       if (!items.length) {
         renderEmpty();
         return;
       }
 
-      // ordena por título
-      items.sort((a, b) => (a.meta?.title || "").localeCompare(b.meta?.title || ""));
-
-      // limpa itens de demo
+      // limpa lista (remove os itens de demo do tema)
       projectList.innerHTML = "";
 
-      // cria cards
+      // cria cada card
       for (const p of items) {
         const meta = p.meta || {};
-        const title = (meta.title || (p.dir?.split("/").slice(-1)[0]) || "Projeto").trim();
+        const title = meta.title || p.dir?.split("/").slice(-1)[0] || "Projeto";
+        const desc = (meta.description || "").trim();
+        const img = meta.imageUrl || "";
+        const progress = typeof meta.progress === "number" ? meta.progress : null;
         const tags = Array.isArray(p.tags) && p.tags.length ? p.tags : ["Outros"];
-        const dataCategory = tags.map((t) => String(t).toLowerCase()).join("|");
-        const img = (meta.imageUrl || "").trim();
-        const progress = (typeof meta.progress === "number") ? meta.progress : null;
-        const warn = !img || progress === null;
 
-        // link prioritário para README; se não houver, para a pasta
+        // dataset-category suporta múltiplas tags (lowercase, separadas por |)
+        const dataCategory = tags.map((t) => t.toLowerCase()).join("|");
+
+        // badges
+        const warn = !img || progress === null;
+        const progressBadge = progress !== null
+          ? `<span class="project-category" title="Progresso">${progress}%</span>`
+          : `<span class="project-category" title="Sem progresso">—</span>`;
+        const warnBadge = warn ? `<span class="project-category" title="Metadados incompletos">⚠️</span>` : "";
+
+        // link do projeto — tenta README se existir, senão pasta
         const linkHref = p.readmePath
           ? `./${encodeURI(p.readmePath)}`
-          : (p.dir ? `./${encodeURI(p.dir)}` : "#");
+          : `./${encodeURI(p.dir || "")}`;
 
         const li = document.createElement("li");
         li.className = "project-item active";
         li.setAttribute("data-filter-item", "");
         li.setAttribute("data-category", dataCategory);
-
         li.innerHTML = `
           <a href="${linkHref}" target="_blank" rel="noreferrer">
             <figure class="project-img">
               <div class="project-item-icon-box"><ion-icon name="eye-outline"></ion-icon></div>
-              <img src="${img || PLACEHOLDER}" alt="${escapeHtml(title)}" loading="lazy"
-                   onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
+              <img src="${img || "./assets/images/project-placeholder.png"}" alt="${title}" loading="lazy"
+                   onerror="this.src='./assets/images/project-placeholder.png'">
             </figure>
             <h3 class="project-title">${escapeHtml(title)}</h3>
             <p class="project-category">${escapeHtml(tags.join(" • "))}</p>
             <div style="display:flex;gap:8px;margin:8px 10px 0 10px;">
-              ${progress !== null
-                ? `<span class="project-category" title="Progresso">${progress}%</span>`
-                : `<span class="project-category" title="Sem progresso">—</span>`}
-              ${warn ? `<span class="project-category" title="Metadados incompletos">⚠️</span>` : ``}
+              ${progressBadge}${warnBadge}
             </div>
           </a>
         `;
-
         projectList.appendChild(li);
       }
 
-      // começa mostrando "all"
+      // inicia mostrando "All"
       filterFunc("all");
     })
     .catch((err) => {
-      console.warn("[portfolio] Falha ao carregar projects.json:", err);
+      console.warn("[portfolio] Erro ao carregar projects.json:", err);
       renderEmpty();
     });
 
@@ -259,7 +245,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
         <a href="#">
           <figure class="project-img">
             <div class="project-item-icon-box"><ion-icon name="alert-circle-outline"></ion-icon></div>
-            <img src="${PLACEHOLDER}" alt="placeholder" loading="lazy">
+            <img src="./assets/images/project-placeholder.png" alt="placeholder" loading="lazy">
           </figure>
           <h3 class="project-title">Sem Projetos No Momento</h3>
           <p class="project-category">Verifique se o projects.json foi gerado no deploy</p>
