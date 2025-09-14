@@ -114,6 +114,27 @@ for (let i = 0; i < navigationLinks.length; i++) {
 // ===== My skills dinâmico a partir do repoLanguages =====
 (async function renderSkillsFromRepoLanguages() {
   const skillsList = document.querySelector('.resume .skills-list');
+  const LANG_COLORS = {
+  "Python": "#3572A5",
+  "JavaScript": "#f1e05a",
+  "TypeScript": "#3178c6",
+  "HTML": "#e34c26",
+  "CSS": "#563d7c",
+  "SQL": "#e38c00",
+  "Java": "#b07219",
+  "C#": "#178600",
+  "C++": "#f34b7d",
+  "C": "#555555",
+  "Go": "#00ADD8",
+  "PHP": "#4F5D95",
+  "Ruby": "#701516",
+  "Rust": "#dea584",
+  "Kotlin": "#A97BFF",
+  "Swift": "#F05138",
+  "Shell": "#89e051"
+  // pode expandir conforme precisar
+};
+
   if (!skillsList) return;
 
   try {
