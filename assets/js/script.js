@@ -111,6 +111,39 @@ for (let i = 0; i < navigationLinks.length; i++) {
   });
 }
 
+// ===== My skills dinâmico a partir do repoLanguages =====
+(async function renderSkillsFromRepoLanguages() {
+  const skillsList = document.querySelector('.resume .skills-list');
+  if (!skillsList) return;
+
+  try {
+    const res = await fetch('./projects.json?v=' + Date.now(), { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const langs = data.repoLanguages || {};
+    const entries = Object.entries(langs);
+    if (!entries.length) return;
+
+    const top = entries.slice(0, 8);
+    const html = top.map(([name, pct]) => `
+      <li class="skills-item">
+        <div class="title-wrapper">
+          <h5 class="h5">${name}</h5>
+          <data value="${pct}">${pct}%</data>
+        </div>
+        <div class="skill-progress-bg">
+          <div class="skill-progress-fill" style="width:${Math.max(3, pct)}%;"></div>
+        </div>
+      </li>
+    `).join('');
+
+    skillsList.innerHTML = html;
+  } catch (e) {
+    console.warn('[skills] falha ao carregar repoLanguages:', e);
+  }
+})();
+
+
 /* =========================================================
    Loader de Portfólio (projects.json)
    - Renderiza cards no tema
