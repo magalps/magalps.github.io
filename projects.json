@@ -1,5 +1,12 @@
 {
-  "generatedAt": "2025-09-13T05:08:15.620Z",
+  "generatedAt": "2025-09-14T17:37:10.248Z",
+  "repoLanguages": {
+    "Python": 88.8,
+    "HTML": 7.8,
+    "JavaScript": 2.7,
+    "CSS": 0.6,
+    "TypeScript": 0.2
+  },
   "projects": [
     {
       "dir": "Projetos/Alura/7DaysOfCode/Lógica JS",
