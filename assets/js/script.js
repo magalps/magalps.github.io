@@ -96,20 +96,20 @@ for (let i = 0; i < formInputs.length; i++) {
 // navegação
 const navigationLinks = document.querySelectorAll("[data-nav-link]");
 const pages = document.querySelectorAll("[data-page]");
-for (let i = 0; i < navigationLinks.length; i++) {
-  navigationLinks[i].addEventListener("click", function () {
-    for (let j = 0; j < pages.length; j++) {
-      if (this.innerHTML.toLowerCase() === pages[j].dataset.page) {
-        pages[j].classList.add("active");
-        navigationLinks[j].classList.add("active");
-        window.scrollTo(0, 0);
-      } else {
-        pages[j].classList.remove("active");
-        navigationLinks[j].classList.remove("active");
-      }
-    }
+
+const norm = s => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+navigationLinks.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const target = norm(btn.textContent);
+    pages.forEach((pg, idx) => {
+      const isActive = norm(pg.dataset.page) === target;
+      pg.classList.toggle("active", isActive);
+      navigationLinks[idx].classList.toggle("active", isActive);
+    });
+    window.scrollTo(0, 0);
   });
-}
+});
 
 /* =========================================================
    Loader de Portfólio (projects.json)
