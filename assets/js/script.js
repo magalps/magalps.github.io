@@ -177,7 +177,21 @@ for (let i = 0; i < navigationLinks.length; i++) {
 
 (function initPortfolio() {
   const PROJECTS_JSON_URL = `./projects.json?v=${Date.now()}`; // cache-busting
-  const techFilters = ["All", "JS", "NodeJS", "Python", "HTML/CSS", "PBI", "SQL", "Java"];
+  const techFilters = [
+  "All",
+  "JS",
+  "NodeJS",
+  "TypeScript",
+  "Python",
+  "HTML/CSS",
+  "PBI",
+  "SQL",
+  "Java",
+  "C#",
+  "C++",
+  "Shell"
+];
+
 
   // Placeholder em SVG inline (evita 404)
   const PLACEHOLDER =

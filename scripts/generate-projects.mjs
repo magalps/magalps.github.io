@@ -5,7 +5,17 @@ import path from "node:path";
 const ROOT = process.cwd();
 
 const INTEREST_TAGS = new Set([
-  "JS", "NodeJS", "Python", "HTML/CSS", "PowerBI", "SQL", "Java"
+  "JS",
+  "NodeJS",
+  "TypeScript",
+  "Python",
+  "HTML/CSS",
+  "PowerBI",
+  "SQL",
+  "Java",
+  "C#",
+  "C++",
+  "Shell"
 ]);
 
 const EXCLUDE = new RegExp(
@@ -74,17 +84,33 @@ function computeLanguagesFromDir(rootAbs) {
 }
 
 // ---------- inferência de tags por extensão
+// ---------- inferência de tags por extensão
 function extToLang(ext) {
   switch (ext) {
-    case "js": case "mjs": return "JS";
-    case "ts": case "tsx": return "JS";
-    case "py": case "ipynb": return "Python";
-    case "html": case "css": return "HTML/CSS";
-    case "sql": case "psql": case "pgsql": return "SQL";
-    case "java": return "Java";
-    case "pbix": case "pbit": return "PowerBI";
-    case "m": return "PowerBI"; // Power Query M
-    default: return null;
+    case "js": case "mjs": case "jsx":
+      return "JS";
+    case "ts": case "tsx":
+      return "TypeScript";
+    case "py": case "ipynb":
+      return "Python";
+    case "html": case "css": case "scss": case "sass":
+      return "HTML/CSS";
+    case "sql": case "psql": case "pgsql":
+      return "SQL";
+    case "java":
+      return "Java";
+    case "cs":
+      return "C#";
+    case "cpp": case "cc": case "cxx": case "hpp": case "h":
+      return "C++";
+    case "sh": case "bash": case "zsh":
+      return "Shell";
+    case "pbix": case "pbit":
+      return "PowerBI";
+    case "m":
+      return "PowerBI"; // Power Query M
+    default:
+      return null;
   }
 }
 
