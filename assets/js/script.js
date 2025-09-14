@@ -2,7 +2,7 @@
 
 /* =========================================================
    Comportamentos originais do tema (sidebar, modal, filtros,
-   navegação, contato) — mantidos exatamente como estavam
+   navegação, contato) — mantidos
    ========================================================= */
 
 const elementToggleFunc = function (elem) { elem.classList.toggle("active"); }
@@ -10,7 +10,7 @@ const elementToggleFunc = function (elem) { elem.classList.toggle("active"); }
 // sidebar
 const sidebar = document.querySelector("[data-sidebar]");
 const sidebarBtn = document.querySelector("[data-sidebar-btn]");
-sidebarBtn.addEventListener("click", function () { elementToggleFunc(sidebar); });
+sidebarBtn?.addEventListener("click", function () { elementToggleFunc(sidebar); });
 
 // testimonials / modal
 const testimonialsItem = document.querySelectorAll("[data-testimonials-item]");
@@ -36,10 +36,10 @@ for (let i = 0; i < testimonialsItem.length; i++) {
   });
 }
 
-modalCloseBtn.addEventListener("click", testimonialsModalFunc);
-overlay.addEventListener("click", testimonialsModalFunc);
+modalCloseBtn?.addEventListener("click", testimonialsModalFunc);
+overlay?.addEventListener("click", testimonialsModalFunc);
 
-// custom select (usado na versão mobile do filtro)
+// custom select (versão mobile do filtro)
 const select = document.querySelector("[data-select]");
 const selectItems = document.querySelectorAll("[data-select-item]");
 const selectValue = document.querySelector("[data-selecct-value]");
@@ -50,16 +50,17 @@ select?.addEventListener("click", function () { elementToggleFunc(this); });
 for (let i = 0; i < selectItems.length; i++) {
   selectItems[i].addEventListener("click", function () {
     let selectedValue = this.innerText.toLowerCase();
-    selectValue.innerText = this.innerText;
+    if (selectValue) selectValue.innerText = this.innerText;
     elementToggleFunc(select);
     filterFunc(selectedValue);
   });
 }
 
+// filtros (itens estáticos do tema — os projetos dinâmicos também usam isso)
 const filterItems = document.querySelectorAll("[data-filter-item]");
 const filterFunc = function (selectedValue) {
   for (let i = 0; i < filterItems.length; i++) {
-    const cats = (filterItems[i].dataset.category || "").split("|"); // suporte multi-tag
+    const cats = (filterItems[i].dataset.category || "").split("|"); // suporta várias tags
     if (selectedValue === "all") {
       filterItems[i].classList.add("active");
     } else if (cats.includes(selectedValue)) {
@@ -70,11 +71,12 @@ const filterFunc = function (selectedValue) {
   }
 }
 
+// botões de filtro grandes (do tema)
 let lastClickedBtn = filterBtn[0];
 for (let i = 0; i < filterBtn.length; i++) {
   filterBtn[i].addEventListener("click", function () {
     let selectedValue = this.innerText.toLowerCase();
-    selectValue.innerText = this.innerText;
+    if (selectValue) selectValue.innerText = this.innerText;
     filterFunc(selectedValue);
     lastClickedBtn?.classList.remove("active");
     this.classList.add("active");
@@ -88,54 +90,54 @@ const formInputs = document.querySelectorAll("[data-form-input]");
 const formBtn = document.querySelector("[data-form-btn]");
 for (let i = 0; i < formInputs.length; i++) {
   formInputs[i].addEventListener("input", function () {
-    if (form.checkValidity()) formBtn.removeAttribute("disabled");
-    else formBtn.setAttribute("disabled", "");
+    if (form?.checkValidity()) formBtn?.removeAttribute("disabled");
+    else formBtn?.setAttribute("disabled", "");
   });
 }
 
 // navegação
 const navigationLinks = document.querySelectorAll("[data-nav-link]");
 const pages = document.querySelectorAll("[data-page]");
-
-const norm = s => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-navigationLinks.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const target = norm(btn.textContent);
-    pages.forEach((pg, idx) => {
-      const isActive = norm(pg.dataset.page) === target;
-      pg.classList.toggle("active", isActive);
-      navigationLinks[idx].classList.toggle("active", isActive);
-    });
-    window.scrollTo(0, 0);
+for (let i = 0; i < navigationLinks.length; i++) {
+  navigationLinks[i].addEventListener("click", function () {
+    for (let j = 0; j < pages.length; j++) {
+      if (this.innerHTML.toLowerCase() === pages[j].dataset.page) {
+        pages[j].classList.add("active");
+        navigationLinks[j].classList.add("active");
+        window.scrollTo(0, 0);
+      } else {
+        pages[j].classList.remove("active");
+        navigationLinks[j].classList.remove("active");
+      }
+    }
   });
-});
+}
 
 /* =========================================================
-   Loader de Portfólio (projects.json)
-   - Renderiza cards no tema
+   Loader de Portfólio (projects.json) para o tema vCard
+   - Renderiza cards
    - Filtros por tecnologia (tags)
    ========================================================= */
 
 (function initPortfolio() {
+  // Ajuste o caminho se o projects.json estiver em outro lugar
   const PROJECTS_JSON_URL = `${location.origin}/projects.json?v=${Date.now()}`;
-  // Tecnologias disponíveis (devem corresponder às tags usadas em projects.json)
   const techFilters = ["All", "JS", "NodeJS", "Python", "HTML/CSS", "PBI", "SQL", "Java"];
 
-  // Contêineres do tema
-  const filterList = document.querySelector(".portfolio .filter-list");
-  const selectList = document.querySelector(".portfolio .select-list");
-  const selectValueEl = document.querySelector(".portfolio [data-selecct-value]");
-  const projectList = document.querySelector(".portfolio .project-list");
+  // Contêineres do tema (na página Portfolio)
+  const portfolioRoot = document.querySelector("article.portfolio");
+  if (!portfolioRoot) return; // página não existe
 
-  if (!projectList) return; // página não encontrada/alterada
+  const filterList = portfolioRoot.querySelector(".filter-list");
+  const selectList = portfolioRoot.querySelector(".select-list");
+  const selectValueEl = portfolioRoot.querySelector("[data-selecct-value]");
+  const projectList = portfolioRoot.querySelector(".project-list");
+  if (!projectList) return;
 
-  // 1) Monta UI dos filtros (substitui existentes pelo conjunto de tecnologias)
+  // Recria os filtros com as tecnologias desejadas
   if (filterList) {
     filterList.innerHTML = techFilters
-      .map((t, idx) =>
-        `<li class="filter-item"><button data-filter-btn class="${idx === 0 ? "active" : ""}">${t}</button></li>`
-      )
+      .map((t, i) => `<li class="filter-item"><button data-filter-btn class="${i === 0 ? "active" : ""}">${t}</button></li>`)
       .join("");
   }
   if (selectList) {
@@ -145,10 +147,10 @@ navigationLinks.forEach((btn) => {
   }
   if (selectValueEl) selectValueEl.textContent = "Select category";
 
-  // Reconecta handlers agora que recriamos a UI de filtros
-  const newFilterBtns = document.querySelectorAll(".portfolio [data-filter-btn]");
+  // Conecta eventos nos novos filtros
+  const newFilterBtns = portfolioRoot.querySelectorAll("[data-filter-btn]");
   let lastBtn = newFilterBtns[0];
-  newFilterBtns.forEach((btn) =>
+  newFilterBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       const val = btn.textContent.trim().toLowerCase();
       if (selectValueEl) selectValueEl.textContent = btn.textContent.trim();
@@ -156,92 +158,98 @@ navigationLinks.forEach((btn) => {
       lastBtn?.classList.remove("active");
       btn.classList.add("active");
       lastBtn = btn;
-    })
-  );
+    });
+  });
 
-  const newSelectItems = document.querySelectorAll(".portfolio [data-select-item]");
-  newSelectItems.forEach((it) =>
+  const newSelectItems = portfolioRoot.querySelectorAll("[data-select-item]");
+  newSelectItems.forEach((it) => {
     it.addEventListener("click", () => {
       const val = it.textContent.trim().toLowerCase();
       if (selectValueEl) selectValueEl.textContent = it.textContent.trim();
       elementToggleFunc(select);
       filterFunc(val);
-    })
-  );
+    });
+  });
 
-  // 2) Busca e renderiza
+  // Placeholder inline (evita 404)
+  const PLACEHOLDER =
+    'data:image/svg+xml;utf8,' +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#222"/><stop offset="1" stop-color="#111"/></linearGradient></defs>
+        <rect width="100%" height="100%" fill="url(#g)"/>
+        <g fill="#FFC857" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+          <text x="400" y="230" font-size="28">Sem imagem</text>
+          <text x="400" y="270" font-size="16" fill="#bbb">projects.json • portfolio</text>
+        </g>
+      </svg>`
+    );
+
+  // Busca e renderiza projetos
   fetch(PROJECTS_JSON_URL)
     .then(async (res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     })
     .then((data) => {
-      const arr = Array.isArray(data) ? data : (Array.isArray(data.projects) ? data.projects : []);
-      if (!arr.length) {
+      const items = Array.isArray(data) ? data : (Array.isArray(data.projects) ? data.projects : []);
+      if (!items.length) {
         renderEmpty();
         return;
       }
 
-  arr.sort((a, b) => (a.meta?.title || "").localeCompare(b.meta?.title || ""));
+      // ordena por título
+      items.sort((a, b) => (a.meta?.title || "").localeCompare(b.meta?.title || ""));
 
-  arr.forEach((p) => {
-    // render card normalmente
-  });
-})
-
-      // limpa lista (remove os itens de demo do tema)
+      // limpa itens de demo
       projectList.innerHTML = "";
 
-      // cria cada card
+      // cria cards
       for (const p of items) {
         const meta = p.meta || {};
-        const title = meta.title || p.dir?.split("/").slice(-1)[0] || "Projeto";
-        const desc = (meta.description || "").trim();
-        const img = meta.imageUrl || "";
-        const progress = typeof meta.progress === "number" ? meta.progress : null;
+        const title = (meta.title || (p.dir?.split("/").slice(-1)[0]) || "Projeto").trim();
         const tags = Array.isArray(p.tags) && p.tags.length ? p.tags : ["Outros"];
-
-        // dataset-category suporta múltiplas tags (lowercase, separadas por |)
-        const dataCategory = tags.map((t) => t.toLowerCase()).join("|");
-
-        // badges
+        const dataCategory = tags.map((t) => String(t).toLowerCase()).join("|");
+        const img = (meta.imageUrl || "").trim();
+        const progress = (typeof meta.progress === "number") ? meta.progress : null;
         const warn = !img || progress === null;
-        const progressBadge = progress !== null
-          ? `<span class="project-category" title="Progresso">${progress}%</span>`
-          : `<span class="project-category" title="Sem progresso">—</span>`;
-        const warnBadge = warn ? `<span class="project-category" title="Metadados incompletos">⚠️</span>` : "";
 
-        // link do projeto — tenta README se existir, senão pasta
+        // link prioritário para README; se não houver, para a pasta
         const linkHref = p.readmePath
           ? `./${encodeURI(p.readmePath)}`
-          : `./${encodeURI(p.dir || "")}`;
+          : (p.dir ? `./${encodeURI(p.dir)}` : "#");
 
         const li = document.createElement("li");
         li.className = "project-item active";
         li.setAttribute("data-filter-item", "");
         li.setAttribute("data-category", dataCategory);
+
         li.innerHTML = `
           <a href="${linkHref}" target="_blank" rel="noreferrer">
             <figure class="project-img">
               <div class="project-item-icon-box"><ion-icon name="eye-outline"></ion-icon></div>
-              <img src="${img || "./assets/images/project-placeholder.png"}" alt="${title}" loading="lazy"
-                   onerror="this.src='./assets/images/project-placeholder.png'">
+              <img src="${img || PLACEHOLDER}" alt="${escapeHtml(title)}" loading="lazy"
+                   onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
             </figure>
             <h3 class="project-title">${escapeHtml(title)}</h3>
             <p class="project-category">${escapeHtml(tags.join(" • "))}</p>
             <div style="display:flex;gap:8px;margin:8px 10px 0 10px;">
-              ${progressBadge}${warnBadge}
+              ${progress !== null
+                ? `<span class="project-category" title="Progresso">${progress}%</span>`
+                : `<span class="project-category" title="Sem progresso">—</span>`}
+              ${warn ? `<span class="project-category" title="Metadados incompletos">⚠️</span>` : ``}
             </div>
           </a>
         `;
+
         projectList.appendChild(li);
       }
 
-      // inicia mostrando "All"
+      // começa mostrando "all"
       filterFunc("all");
     })
     .catch((err) => {
-      console.warn("[portfolio] Erro ao carregar projects.json:", err);
+      console.warn("[portfolio] Falha ao carregar projects.json:", err);
       renderEmpty();
     });
 
@@ -251,7 +259,7 @@ navigationLinks.forEach((btn) => {
         <a href="#">
           <figure class="project-img">
             <div class="project-item-icon-box"><ion-icon name="alert-circle-outline"></ion-icon></div>
-            <img src="./assets/images/project-placeholder.png" alt="placeholder" loading="lazy">
+            <img src="${PLACEHOLDER}" alt="placeholder" loading="lazy">
           </figure>
           <h3 class="project-title">Sem Projetos No Momento</h3>
           <p class="project-category">Verifique se o projects.json foi gerado no deploy</p>
