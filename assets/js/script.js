@@ -176,11 +176,18 @@ for (let i = 0; i < navigationLinks.length; i++) {
       return res.json();
     })
     .then((data) => {
-      const items = Array.isArray(data?.projects) ? data.projects : [];
-      if (!items.length) {
+      const arr = Array.isArray(data) ? data : (Array.isArray(data.projects) ? data.projects : []);
+      if (!arr.length) {
         renderEmpty();
         return;
       }
+
+  arr.sort((a, b) => (a.meta?.title || "").localeCompare(b.meta?.title || ""));
+
+  arr.forEach((p) => {
+    // render card normalmente
+  });
+})
 
       // limpa lista (remove os itens de demo do tema)
       projectList.innerHTML = "";
