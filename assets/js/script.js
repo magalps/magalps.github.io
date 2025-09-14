@@ -56,20 +56,18 @@ for (let i = 0; i < selectItems.length; i++) {
   });
 }
 
-// filtros (itens estáticos do tema — os projetos dinâmicos também usam isso)
-const filterItems = document.querySelectorAll("[data-filter-item]");
+// filtro DINÂMICO (reconsulta os itens sempre que usar)
 const filterFunc = function (selectedValue) {
-  for (let i = 0; i < filterItems.length; i++) {
-    const cats = (filterItems[i].dataset.category || "").split("|"); // suporta várias tags
-    if (selectedValue === "all") {
-      filterItems[i].classList.add("active");
-    } else if (cats.includes(selectedValue)) {
-      filterItems[i].classList.add("active");
+  const items = document.querySelectorAll("[data-filter-item]");
+  items.forEach((el) => {
+    const cats = (el.dataset.category || "").split("|"); // suporta várias tags
+    if (selectedValue === "all" || cats.includes(selectedValue)) {
+      el.classList.add("active");
     } else {
-      filterItems[i].classList.remove("active");
+      el.classList.remove("active");
     }
-  }
-}
+  });
+};
 
 // botões de filtro grandes (do tema)
 let lastClickedBtn = filterBtn[0];
@@ -123,6 +121,20 @@ for (let i = 0; i < navigationLinks.length; i++) {
   const PROJECTS_JSON_URL = `./projects.json?v=${Date.now()}`; // cache-busting
   const techFilters = ["All", "JS", "NodeJS", "Python", "HTML/CSS", "PBI", "SQL", "Java"];
 
+  // Placeholder em SVG inline (evita 404)
+  const PLACEHOLDER =
+    'data:image/svg+xml;utf8,' +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#222"/><stop offset="1" stop-color="#111"/></linearGradient></defs>
+        <rect width="100%" height="100%" fill="url(#g)"/>
+        <g fill="#FFC857" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+          <text x="400" y="230" font-size="28">Sem imagem</text>
+          <text x="400" y="270" font-size="16" fill="#bbb">projects.json • portfolio</text>
+        </g>
+      </svg>`
+    );
+
   // Contêineres do tema
   const filterList = document.querySelector(".portfolio .filter-list");
   const selectList = document.querySelector(".portfolio .select-list");
@@ -131,7 +143,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
 
   if (!projectList) return; // página não encontrada/alterada
 
-  // 1) Monta UI dos filtros (substitui existentes pelo conjunto de tecnologias)
+  // 1) Monta UI dos filtros (substitui existentes)
   if (filterList) {
     filterList.innerHTML = techFilters
       .map((t, idx) =>
@@ -190,7 +202,6 @@ for (let i = 0; i < navigationLinks.length; i++) {
       for (const p of items) {
         const meta = p.meta || {};
         const title = meta.title || p.dir?.split("/").slice(-1)[0] || "Projeto";
-        const desc = (meta.description || "").trim();
         const img = meta.imageUrl || "";
         const progress = typeof meta.progress === "number" ? meta.progress : null;
         const tags = Array.isArray(p.tags) && p.tags.length ? p.tags : ["Outros"];
@@ -218,8 +229,8 @@ for (let i = 0; i < navigationLinks.length; i++) {
           <a href="${linkHref}" target="_blank" rel="noreferrer">
             <figure class="project-img">
               <div class="project-item-icon-box"><ion-icon name="eye-outline"></ion-icon></div>
-              <img src="${img || "./assets/images/project-placeholder.png"}" alt="${title}" loading="lazy"
-                   onerror="this.src='./assets/images/project-placeholder.png'">
+              <img src="${img || PLACEHOLDER}" alt="${escapeHtml(title)}" loading="lazy"
+                   onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
             </figure>
             <h3 class="project-title">${escapeHtml(title)}</h3>
             <p class="project-category">${escapeHtml(tags.join(" • "))}</p>
@@ -240,18 +251,25 @@ for (let i = 0; i < navigationLinks.length; i++) {
     });
 
   function renderEmpty() {
-    projectList.innerHTML = `
-      <li class="project-item active" data-filter-item data-category="all">
-        <a href="#">
-          <figure class="project-img">
-            <div class="project-item-icon-box"><ion-icon name="alert-circle-outline"></ion-icon></div>
-            <img src="./assets/images/project-placeholder.png" alt="placeholder" loading="lazy">
-          </figure>
-          <h3 class="project-title">Sem Projetos No Momento</h3>
-          <p class="project-category">Verifique se o projects.json foi gerado no deploy</p>
-        </a>
-      </li>
+    const msg = document.createElement("li");
+    msg.className = "project-item active";
+    msg.setAttribute("data-filter-item", "");
+    msg.setAttribute("data-category", "all");
+    msg.innerHTML = `
+      <a href="#">
+        <figure class="project-img">
+          <div class="project-item-icon-box"><ion-icon name="alert-circle-outline"></ion-icon></div>
+          <img src="${PLACEHOLDER}" alt="placeholder" loading="lazy">
+        </figure>
+        <h3 class="project-title">Sem Projetos No Momento</h3>
+        <p class="project-category">Verifique se o projects.json foi gerado no deploy</p>
+      </a>
     `;
+    const ul = document.querySelector(".portfolio .project-list");
+    if (ul) {
+      ul.innerHTML = "";
+      ul.appendChild(msg);
+    }
   }
 
   function escapeHtml(s) {
