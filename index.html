@@ -679,68 +679,76 @@
 
   <!-- ======= ADIÇÃO: preencher Portfolio a partir do projects.json ======= -->
   <script>
-  (async () => {
+    (async () => {
     const listEl = document.querySelector('.project-list');
     if (!listEl) return;
 
-    // Mapeia suas tags técnicas para as 3 categorias do tema (para os filtros funcionarem).
+    // Mapeia suas tags técnicas para as 3 categorias do tema
     const TAG_TO_CATEGORY = {
       'JS': 'web development',
       'NodeJS': 'web development',
       'Python': 'applications',
       'HTML/CSS': 'web design',
       'PowerBI': 'applications',
+      'PBI': 'applications',
       'SQL': 'applications',
       'Java': 'web development'
     };
 
-    // util
     const esc = (s) => (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
     try {
-      const res = await fetch('projects.json', { cache: 'no-cache' });
+      // cache-busting pra não pegar versão antiga
+      const res = await fetch(`projects.json?v=${Date.now()}`, { cache: 'no-cache' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const projects = await res.json();
-      // limpa os exemplos (se houver)
+
+      const data = await res.json();
+      // se vier {projects:[...]} pega o array; se por acaso vier já array, usa direto
+      const items = Array.isArray(data) ? data : (Array.isArray(data.projects) ? data.projects : []);
+      // limpa qualquer demo
       listEl.innerHTML = '';
 
-      // ordena por nome (ou ajuste para data se seu projects.json tiver)
-      projects.sort((a,b) => esc(a.name).localeCompare(esc(b.name)));
+      // ordena por título (fallback para nome da pasta)
+      items.sort((a, b) => {
+        const at = (a.meta?.title || a.dir || '').toLowerCase();
+        const bt = (b.meta?.title || b.dir || '').toLowerCase();
+        return at.localeCompare(bt);
+      });
 
-      const html = projects.map(it => {
-        const name = it.name || 'Projeto sem nome';
-        const liveUrl = it.pathUrl || '#';
-        const codeUrl = it.codeUrl || liveUrl;
-        const tags = Array.isArray(it.tags) ? it.tags : [];
-        const mainTag = tags[0] || 'web development';
+      const html = items.map(p => {
+        const meta = p.meta || {};
+        const title = meta.title || (p.dir ? p.dir.split('/').slice(-1)[0] : 'Projeto');
+        const img = meta.imageUrl || './assets/images/project-placeholder.png';
+        const tags = Array.isArray(p.tags) && p.tags.length ? p.tags : ['JS']; // default ajuda no filtro
+        const mainTag = tags[0];
         const category = TAG_TO_CATEGORY[mainTag] || 'web development';
+        const catText = tags.join(' • ');
 
-        const img = it.meta && it.meta.imageUrl ? it.meta.imageUrl : './assets/images/project-placeholder.png';
-        const catText = tags.length ? tags.join(' • ') : 'Web development';
+        // link preferencialmente para o README; senão, para a pasta
+        const href = p.readmePath ? `./${encodeURI(p.readmePath)}` : (p.dir ? `./${encodeURI(p.dir)}` : '#');
 
         return `
           <li class="project-item active" data-filter-item data-category="${esc(category)}">
-            <a href="${esc(liveUrl)}" target="_blank" rel="noreferrer">
+            <a href="${esc(href)}" target="_blank" rel="noreferrer">
               <figure class="project-img" style="height:200px; overflow:hidden; background:#0f172a; display:flex; align-items:center; justify-content:center;">
-                <div class="project-item-icon-box">
-                  <ion-icon name="eye-outline"></ion-icon>
-                </div>
-                <img src="${esc(img)}" alt="${esc(name)}" loading="lazy"
-                     style="width:100%; height:100%; object-fit:contain; object-position:center; display:block;"/>
+                <div class="project-item-icon-box"><ion-icon name="eye-outline"></ion-icon></div>
+                <img src="${esc(img)}" alt="${esc(title)}" loading="lazy"
+                    style="width:100%; height:100%; object-fit:contain; object-position:center; display:block;"
+                    onerror="this.src='./assets/images/project-placeholder.png'">
               </figure>
-              <h3 class="project-title">${esc(name)}</h3>
+              <h3 class="project-title">${esc(title)}</h3>
               <p class="project-category">${esc(catText)}</p>
             </a>
-          </li>`;
+          </li>
+        `;
       }).join('');
 
       listEl.insertAdjacentHTML('beforeend', html);
 
-      // Reaplica o script de filtro do tema (ele lê data-category/texto dos botões)
-      // Como mantivemos os nomes "Web design / Applications / Web development", tudo funciona.
+      // mostra tudo inicialmente (o script do tema cuida dos filtros por data-category)
+      // nada a fazer aqui — os botões "Web design / Applications / Web development" já funcionam.
     } catch (e) {
       console.warn('[portfolio] Falha ao carregar projects.json:', e);
-      // fallback: mostra uma mensagem simples
       listEl.innerHTML = `
         <li class="project-item active" data-filter-item data-category="web development">
           <a href="#">
@@ -753,7 +761,8 @@
           </a>
         </li>`;
     }
-  })();
+    })();
   </script>
+
 </body>
 </html>
