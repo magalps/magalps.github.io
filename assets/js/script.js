@@ -242,7 +242,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
     const data = await res.json();
 
     // Education
-    const eduList = findTimelineListByHeading('Educação');
+    const eduList = findTimelineListByHeading('Education');
     if (eduList && Array.isArray(data.education)) {
       eduList.innerHTML = data.education.map(ed => `
         <li class="timeline-item">
@@ -257,7 +257,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
     }
 
     // Experience
-    const expList = findTimelineListByHeading('Experiência');
+    const expList = findTimelineListByHeading('Experience');
     if (expList && Array.isArray(data.experience)) {
       expList.innerHTML = data.experience.map(ex => `
         <li class="timeline-item">
