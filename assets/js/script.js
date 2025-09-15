@@ -398,10 +398,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
 
         // dataset-category suporta múltiplas tags (lowercase, separadas por |)
         const dataCategory = tags.map((t) => String(t).toLowerCase()).join("|");
-        li.setAttribute("data-category", dataCategory);
 
-
-        // barra de progresso (se houver)
         const progressUI = progress == null ? "" : `
           <div style="display:flex;align-items:center;gap:8px;margin:8px 10px 0 10px;">
             <div style="flex:1;height:6px;border-radius:999px;background:#1f2937;overflow:hidden;">
@@ -410,20 +407,22 @@ for (let i = 0; i < navigationLinks.length; i++) {
             <span class="project-category" style="white-space:nowrap;">${progress}%</span>
           </div>`;
 
-        // link do projeto — vai pra pasta no GitHub (tree)
+        // link para a PASTA no GitHub
         const href = p.dir ? (GITHUB_TREE_BASE + encodeURI(p.dir)) : "#";
 
-        const li = document.createElement("li");
-        li.className = "project-item active";
-        li.setAttribute("data-filter-item", "");
-        li.setAttribute("data-category", dataCategory);
-        li.innerHTML = `
+        // ⚠️ renomeado para evitar colisão com qualquer 'li' no escopo
+        const cardEl = document.createElement("li");
+        cardEl.className = "project-item active";
+        cardEl.setAttribute("data-filter-item", "");
+        cardEl.setAttribute("data-category", dataCategory);
+
+        cardEl.innerHTML = `
           <a href="${href}" target="_blank" rel="noreferrer">
             <figure class="project-img" style="height:200px;overflow:hidden;background:#0f172a;display:flex;align-items:center;justify-content:center;">
               <div class="project-item-icon-box"><ion-icon name="eye-outline"></ion-icon></div>
               <img src="${img || PLACEHOLDER}" alt="${escapeHtml(title)}" loading="lazy"
-                   style="width:100%;height:100%;object-fit:contain;object-position:center;display:block;"
-                   onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
+                  style="width:100%;height:100%;object-fit:contain;object-position:center;display:block;"
+                  onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
             </figure>
             <h3 class="project-title">${escapeHtml(title)}</h3>
             <p class="project-category" style="margin-top:4px;">${escapeHtml(tags.join(" • "))}</p>
@@ -431,8 +430,10 @@ for (let i = 0; i < navigationLinks.length; i++) {
             ${progressUI}
           </a>
         `;
-        projectList.appendChild(li);
+
+        projectList.appendChild(cardEl);
       }
+
 
       // inicia mostrando "All"
       filterFunc("all");
