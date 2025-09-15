@@ -404,6 +404,8 @@ for (let i = 0; i < navigationLinks.length; i++) {
       // limpa lista (remove os itens de demo do tema)
       projectList.innerHTML = "";
 
+      buildFiltersFromProjects(items);
+
       // cria cada card
       for (const p of items) {
         const meta      = p.meta || {};
