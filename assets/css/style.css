@@ -54,6 +54,29 @@
     hsl(35, 100%, 68%)
   );
 
+  /* icons */
+  /* ajuste fino dos ícones SVG */
+  .service .service-icon-box .icon {
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+  }
+
+  /* paleta (ajuste as cores como preferir) */
+  .service .service-item:nth-child(1) .service-icon-box { color: #ffae42; } /* Tecnologias */
+  .service .service-item:nth-child(2) .service-icon-box { color: #ffae42; } /* Boas práticas */
+  .service .service-item:nth-child(3) .service-icon-box { color: #ffae42; } /* Postura */
+  .service .service-item:nth-child(4) .service-icon-box { color: #ffae42; } /* Objetivo */
+
+  /* se quiser um leve glow */
+  .service .service-icon-box {
+    display: grid;
+    place-items: center;
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset;
+  }
   /* solid */
 
   --jet: hsl(0, 0%, 22%);

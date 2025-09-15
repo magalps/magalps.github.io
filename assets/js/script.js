@@ -213,7 +213,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
 })();
 
 /* =========================================================
-   Resume loader (preenche Education & Experience a partir de data/resume.json)
+   Resume loader (preenche Educação, Experiência e Cerficado a partir de data/resume.json)
    ========================================================= */
 (async function loadResume() {
   const RESUME_URL = './data/resume.json?v=' + Date.now();
@@ -241,8 +241,8 @@ for (let i = 0; i < navigationLinks.length; i++) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    // Education
-    const eduList = findTimelineListByHeading('Education');
+    // Educação
+    const eduList = findTimelineListByHeading('Educação');
     if (eduList && Array.isArray(data.education)) {
       eduList.innerHTML = data.education.map(ed => `
         <li class="timeline-item">
@@ -256,8 +256,8 @@ for (let i = 0; i < navigationLinks.length; i++) {
       `).join('');
     }
 
-    // Experience
-    const expList = findTimelineListByHeading('Experience');
+    // Experiência
+    const expList = findTimelineListByHeading('Experiência');
     if (expList && Array.isArray(data.experience)) {
       expList.innerHTML = data.experience.map(ex => `
         <li class="timeline-item">

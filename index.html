@@ -13,6 +13,8 @@
   <!-- theme css -->
   <link rel="stylesheet" href="./assets/css/style.css">
 
+  <!-- icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <!-- google fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,6 +86,7 @@
 
         <ul class="social-list">
           <li class="social-item"><a href="https://www.linkedin.com/in/and-soares/" class="social-link"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+          <li class="social-item"><a href="https://github.com/magalps" class="social-link"><ion-icon name="logo-github"></ion-icon></a></li>
         </ul>
       </div>
     </aside>
@@ -97,14 +100,14 @@
           <li class="navbar-item"><button class="navbar-link active" data-nav-link>Sobre</button></li>
           <li class="navbar-item"><button class="navbar-link" data-nav-link>Resumo</button></li>
           <li class="navbar-item"><button class="navbar-link" data-nav-link>Portfólio</button></li>
-          <li class="navbar-item"><button class="navbar-link" data-nav-link>Blog</button></li>
-          <li class="navbar-item"><button class="navbar-link" data-nav-link>Contato</button></li>
+          <!-- <li class="navbar-item"><button class="navbar-link" data-nav-link>Blog</button></li>
+          <li class="navbar-item"><button class="navbar-link" data-nav-link>Contato</button></li>-->
         </ul>
       </nav>
 
       <!-- #SOBRE -->
-      <article class="about active" data-page="about">
-        <header><h2 class="About me">Sobre mim</h2></header>
+      <article class="about active" data-page="sobre">
+        <header><h2 class="h2 article-title">Sobre mim</h2></header>
 
         <section class="about-text">
           <p>
@@ -273,12 +276,12 @@
       </article>
 
       <!-- #RESUMO -->
-      <article class="resume" data-page="resume">
-        <header><h2 class="Resume">Resumo</h2></header>
+      <article class="resume" data-page="resumo">
+        <header><h2 class="h2 article-title">Resumo</h2></header>
         <section class="timeline">
           <div class="title-wrapper">
             <div class="icon-box"><ion-icon name="book-outline"></ion-icon></div>
-            <h3 class="education">Educação</h3>
+            <h3 class="h3">Educação</h3>
           </div>
           <ol class="timeline-list" id="education-list"></ol>
         </section>
@@ -286,7 +289,7 @@
         <section class="timeline">
           <div class="title-wrapper">
             <div class="icon-box"><ion-icon name="book-outline"></ion-icon></div>
-            <h3 class="experience">Experiência</h3>
+            <h3 class="h3">Experiência</h3>
           </div>
           <ol class="timeline-list" id="experience-list"></ol>
         </section>
@@ -300,8 +303,8 @@
       </article>
 
       <!-- #PORTFOLIO -->
-      <article class="portfolio" data-page="portfolio">
-        <header><h2 class="Portfolio">Portfólio</h2></header>
+      <article class="portfolio" data-page="portfólio">
+        <header><h2 class="h2 article-title">Portfólio</h2></header>
 
         <section class="projects">
           <!-- filtros originais do tema (mantidos) -->
@@ -501,8 +504,8 @@
       </article>
 
       <!-- #CONTACT -->
-      <article class="contact" data-page="contact">
-        <header><h2 class="Contact">Contato</h2></header>
+      <article class="contact" data-page="contato">
+        <header><h2 class="h2 article-title">Contato</h2></header>
 
         <section class="mapbox" data-mapbox>
           <figure>

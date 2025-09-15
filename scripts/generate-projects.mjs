@@ -84,7 +84,6 @@ function computeLanguagesFromDir(rootAbs) {
 }
 
 // ---------- inferência de tags por extensão
-// ---------- inferência de tags por extensão
 function extToLang(ext) {
   switch (ext) {
     case "js": case "mjs": case "jsx":
