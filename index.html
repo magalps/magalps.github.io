@@ -677,5 +677,155 @@
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
+  <!-- ======= ADIÇÃO: preencher Portfolio a partir do projects.json ======= -->
+<script>
+(async () => {
+  const listEl = document.querySelector('.project-list');
+  const filterListEl = document.querySelector('.portfolio .filter-list');
+  const selectListEl = document.querySelector('.portfolio .select-list');
+  const selectValueEl = document.querySelector('.portfolio [data-selecct-value]');
+  if (!listEl) return;
+
+  // base para abrir DIRETO a pasta do projeto no GitHub
+  const GITHUB_TREE_BASE = 'https://github.com/magalps/magalps.github.io/tree/main/';
+
+  const esc = (s) => (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const clamp = (txt, n=160) => {
+    const t = (txt || '').trim();
+    return t.length > n ? t.slice(0, n - 1) + '…' : t;
+  };
+
+  // ===== render dos cards =====
+  const renderCards = (items) => {
+    listEl.innerHTML = '';
+    items.sort((a, b) => {
+      const at = (a.meta?.title || a.dir || '').toLowerCase();
+      const bt = (b.meta?.title || b.dir || '').toLowerCase();
+      return at.localeCompare(bt);
+    });
+
+    const html = items.map(p => {
+      const meta = p.meta || {};
+      const title = meta.title || (p.dir ? p.dir.split('/').slice(-1)[0] : 'Projeto');
+      const img = meta.imageUrl || './assets/images/project-placeholder.png';
+      const desc = clamp(meta.description, 160);
+      const progress = Number.isFinite(meta.progress) ? Math.max(0, Math.min(100, Math.round(meta.progress))) : null;
+      const tags = Array.isArray(p.tags) && p.tags.length ? p.tags : ['Outros'];
+      const tagsLower = tags.map(t => String(t).toLowerCase());
+
+      const href = p.dir ? (GITHUB_TREE_BASE + encodeURI(p.dir)) : '#';
+
+      const progressUI = progress == null ? '' : `
+        <div style="display:flex;align-items:center;gap:8px;margin:8px 10px 0 10px;">
+          <div style="flex:1;height:6px;border-radius:999px;background:#1f2937;overflow:hidden;">
+            <div style="width:${progress}%;height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+          </div>
+          <span class="project-category" style="white-space:nowrap;">${progress}%</span>
+        </div>`;
+
+      return `
+        <li class="project-item active" data-filter-item data-tags="${esc(tagsLower.join('|'))}">
+          <a href="${esc(href)}" target="_blank" rel="noreferrer">
+            <figure class="project-img" style="height:200px;overflow:hidden;background:#0f172a;display:flex;align-items:center;justify-content:center;">
+              <div class="project-item-icon-box"><ion-icon name="eye-outline"></ion-icon></div>
+              <img src="${esc(img)}" alt="${esc(title)}" loading="lazy"
+                   style="width:100%;height:100%;object-fit:contain;object-position:center;display:block;"
+                   onerror="this.src='./assets/images/project-placeholder.png'">
+            </figure>
+            <h3 class="project-title">${esc(title)}</h3>
+            <p class="project-category" style="margin-top:4px;">${esc(tags.join(' • '))}</p>
+            <p class="project-category" style="margin:6px 10px 0 10px;color:var(--light-gray);">${esc(desc)}</p>
+            ${progressUI}
+          </a>
+        </li>`;
+    }).join('');
+
+    listEl.insertAdjacentHTML('beforeend', html);
+  };
+
+  // ===== filtros por LINGUAGEM (tags do projects.json) =====
+  const buildLanguageFilters = (items) => {
+    const tagSet = new Set();
+    items.forEach(p => Array.isArray(p.tags) && p.tags.forEach(t => t && tagSet.add(String(t))));
+    const tags = ['All', ...Array.from(tagSet).sort((a,b)=>a.localeCompare(b))];
+
+    // substitui a UI do tema pelos botões de linguagens
+    if (filterListEl) {
+      filterListEl.innerHTML = tags.map((t, i) =>
+        `<li class="filter-item"><button class="${i===0?'active':''}" data-filter-btn>${t}</button></li>`
+      ).join('');
+    }
+    if (selectListEl) {
+      selectListEl.innerHTML = tags.map(t => `<li class="select-item"><button data-select-item>${t}</button></li>`).join('');
+    }
+    if (selectValueEl) selectValueEl.textContent = 'Select category';
+
+    const applyFilterByTag = (tag) => {
+      const needle = String(tag || 'All').toLowerCase();
+      document.querySelectorAll('.project-item[data-filter-item]').forEach(li => {
+        const tagsStr = (li.getAttribute('data-tags') || '');
+        if (needle === 'all') {
+          li.classList.add('active');
+        } else {
+          const has = tagsStr.split('|').includes(needle);
+          li.classList.toggle('active', has);
+        }
+      });
+    };
+
+    // listeners nos botões
+    let lastBtn = filterListEl?.querySelector('button.active') || null;
+    filterListEl?.querySelectorAll('[data-filter-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        lastBtn?.classList.remove('active');
+        btn.classList.add('active');
+        lastBtn = btn;
+        const v = btn.textContent.trim();
+        if (selectValueEl) selectValueEl.textContent = v;
+        applyFilterByTag(v);
+      });
+    });
+
+    // listeners no select (mobile)
+    selectListEl?.querySelectorAll('[data-select-item]').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const v = opt.textContent.trim();
+        if (selectValueEl) selectValueEl.textContent = v;
+        applyFilterByTag(v);
+        document.querySelector('[data-select]')?.classList.remove('active');
+      });
+    });
+
+    // inicia em "All"
+    applyFilterByTag('All');
+  };
+
+  try {
+    const res = await fetch(`projects.json?v=${Date.now()}`, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (Array.isArray(data.projects) ? data.projects : []);
+
+    renderCards(items);
+    buildLanguageFilters(items);
+
+  } catch (e) {
+    console.warn('[portfolio] Falha ao carregar projects.json:', e);
+    listEl.innerHTML = `
+      <li class="project-item active" data-filter-item data-tags="all">
+        <a href="#">
+          <figure class="project-img">
+            <div class="project-item-icon-box"><ion-icon name="alert-circle-outline"></ion-icon></div>
+            <img src="./assets/images/project-placeholder.png" alt="placeholder" loading="lazy">
+          </figure>
+          <h3 class="project-title">Sem projetos no momento</h3>
+          <p class="project-category">Verifique se o projects.json foi gerado no deploy</p>
+        </a>
+      </li>`;
+  }
+})();
+</script>
+
 </body>
 </html>
