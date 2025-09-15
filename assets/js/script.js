@@ -104,18 +104,11 @@ const FILTER_ALIASES = {
 
 
 // filtro DINÂMICO (rebusca os itens sempre)
-const filterFunc = function (rawValue) {
-  const selectedValueRaw = String(rawValue || "all").toLowerCase().trim();
-  const selectedValue = FILTER_ALIASES[selectedValueRaw] || selectedValueRaw;
-
-  const items = document.querySelectorAll("[data-filter-item]");
+const filterFunc = function (selectedValue) {
+  const items = document.querySelectorAll(".portfolio [data-filter-item]");
   items.forEach((el) => {
-    const cats = (el.dataset.category || "").split("|"); // multi-tag, tudo lowercase
-    if (selectedValue === "all" || cats.includes(selectedValue)) {
-      el.classList.add("active");
-    } else {
-      el.classList.remove("active");
-    }
+    const cats = (el.dataset.category || "").split("|"); // multi-tag
+    el.classList.toggle("active", selectedValue === "all" || cats.includes(selectedValue));
   });
 };
 
