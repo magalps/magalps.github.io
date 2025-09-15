@@ -219,6 +219,67 @@ for (let i = 0; i < navigationLinks.length; i++) {
   }
 })();
 
+/* =========================================================
+   Resume loader (preenche Education & Experience a partir de data/resume.json)
+   ========================================================= */
+(async function loadResume() {
+  const RESUME_URL = './data/resume.json?v=' + Date.now();
+
+  // helpers
+  const fmtRange = (s, e) => {
+    const start = s ? (s.slice(0, 4)) : '';
+    const end = e ? (e.slice(0, 4)) : 'Present';
+    return (start || end) ? `${start} — ${end}` : '';
+  };
+
+  const findTimelineListByHeading = (headingText) => {
+    const sections = document.querySelectorAll('.resume .timeline');
+    for (const sec of sections) {
+      const h3 = sec.querySelector('.h3');
+      if (h3 && h3.textContent.trim().toLowerCase() === headingText.toLowerCase()) {
+        return sec.querySelector('.timeline-list');
+      }
+    }
+    return null;
+  };
+
+  try {
+    const res = await fetch(RESUME_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // Education
+    const eduList = findTimelineListByHeading('Education');
+    if (eduList && Array.isArray(data.education)) {
+      eduList.innerHTML = data.education.map(ed => `
+        <li class="timeline-item">
+          <h4 class="h4 timeline-item-title">${ed.institution || ''}</h4>
+          <span>${fmtRange(ed.startDate, ed.endDate)}</span>
+          <p class="timeline-text">
+            ${(ed.studyType ? ed.studyType + (ed.area ? ' — ' + ed.area : '') : (ed.area || '')) || ''}
+            ${ed.summary ? ('<br>' + ed.summary) : ''}
+          </p>
+        </li>
+      `).join('');
+    }
+
+    // Experience
+    const expList = findTimelineListByHeading('Experience');
+    if (expList && Array.isArray(data.experience)) {
+      expList.innerHTML = data.experience.map(ex => `
+        <li class="timeline-item">
+          <h4 class="h4 timeline-item-title">${ex.position || ''} ${ex.company ? '— ' + ex.company : ''}</h4>
+          <span>${fmtRange(ex.startDate, ex.endDate)}</span>
+          <p class="timeline-text">${ex.summary || ''}</p>
+        </li>
+      `).join('');
+    }
+  } catch (e) {
+    console.warn('[resume] falha ao carregar data/resume.json:', e);
+    // Sem panic — o conteúdo estático do tema permanece.
+  }
+})();
+
 
 /* =========================================================
    Loader de Portfólio (projects.json)
