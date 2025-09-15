@@ -1,5 +1,5 @@
 {
-  "education": [
+  "Educação": [
     {
       "institution": "Universidade X",
       "studyType": "Bacharelado",
@@ -17,7 +17,7 @@
       "summary": "Projetos práticos com APIs REST e testes."
     }
   ],
-  "experience": [
+  "Experiência": [
     {
       "company": "Empresa Y",
       "position": "Desenvolvedor Back-end",
