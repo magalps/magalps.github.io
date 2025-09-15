@@ -2,20 +2,35 @@
   "education": [
     {
       "institution": "Universidade X",
-      "area": "Sistemas de Informação",
       "studyType": "Bacharelado",
-      "startDate": "2017-02",
-      "endDate": "2021-12",
-      "summary": "Ênfase em engenharia de software e dados."
+      "area": "Ciência da Computação",
+      "startDate": "2016-02-01",
+      "endDate": "2020-12-15",
+      "summary": "Ênfase em estruturas de dados, bancos de dados e desenvolvimento web."
+    },
+    {
+      "institution": "Alura",
+      "studyType": "Formação",
+      "area": "JavaScript/Node.js",
+      "startDate": "2023-03-01",
+      "endDate": "2023-09-30",
+      "summary": "Projetos práticos com APIs REST e testes."
     }
   ],
   "experience": [
     {
       "company": "Empresa Y",
-      "position": "Desenvolvedor Full-Stack",
-      "startDate": "2022-01",
+      "position": "Desenvolvedor Back-end",
+      "startDate": "2021-01-10",
+      "endDate": "2023-08-31",
+      "summary": "Criação de APIs Node.js, integrações com serviços externos e automação de rotinas."
+    },
+    {
+      "company": "Freelancer",
+      "position": "Data Analyst",
+      "startDate": "2023-09-01",
       "endDate": null,
-      "summary": "Node.js, React, SQL Server e integrações Protheus/TOTVS."
+      "summary": "Dashboards em Power BI, ETL e análises ad-hoc em SQL/Python."
     }
   ]
 }
