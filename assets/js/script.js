@@ -290,7 +290,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
 (function initPortfolio() {
   const PROJECTS_JSON_URL = `./projects.json?v=${Date.now()}`; // cache-busting
   const techFilters = [
-    "All","JS","NodeJS","TypeScript","Python","HTML/CSS","PBI","SQL","Java","C#","C++","Shell","PowerBI"
+    "All","JS","NodeJS","TypeScript","Python","HTML/CSS","PowerBI","SQL","Java","C#","C++","Shell"
   ];
 
   // abrir DIRETO a pasta do projeto no GitHub
@@ -330,45 +330,62 @@ for (let i = 0; i < navigationLinks.length; i++) {
 
   if (!projectList) return;
 
-  // 1) Monta UI dos filtros (substitui existentes)
-  if (filterList) {
-    filterList.innerHTML = techFilters
-      .map((t, idx) =>
-        `<li class="filter-item"><button data-filter-btn class="${idx === 0 ? "active" : ""}">${t}</button></li>`
-      )
-      .join("");
+  // 1) Monta UI dos filtros com base nos projetos
+  function buildFiltersFromProjects(items) {
+    const tagSet = new Set();
+
+    // coleta todas as tags dos projetos
+    items.forEach(p => {
+      if (Array.isArray(p.tags)) {
+        p.tags.forEach(t => t && tagSet.add(String(t).trim()));
+      }
+    });
+
+    // cria array ordenado, adiciona "All" na frente
+    const tags = ["All", ...Array.from(tagSet).sort((a, b) => a.localeCompare(b))];
+
+    // renderiza botões (desktop)
+    if (filterList) {
+      filterList.innerHTML = tags
+        .map((t, idx) =>
+          `<li class="filter-item"><button data-filter-btn class="${idx === 0 ? "active" : ""}">${t}</button></li>`
+        )
+        .join("");
+    }
+
+    // renderiza select (mobile)
+    if (selectList) {
+      selectList.innerHTML = tags
+        .map(t => `<li class="select-item"><button data-select-item>${t}</button></li>`)
+        .join("");
+    }
+
+    if (selectValueEl) selectValueEl.textContent = "Select category";
+
+    // conecta os handlers
+    const newFilterBtns = document.querySelectorAll(".portfolio [data-filter-btn]");
+    let lastBtn = newFilterBtns[0];
+    newFilterBtns.forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const val = btn.textContent.trim().toLowerCase();
+        if (selectValueEl) selectValueEl.textContent = btn.textContent.trim();
+        filterFunc(val);
+        lastBtn?.classList.remove("active");
+        btn.classList.add("active");
+        lastBtn = btn;
+      })
+    );
+
+    const newSelectItems = document.querySelectorAll(".portfolio [data-select-item]");
+    newSelectItems.forEach((it) =>
+      it.addEventListener("click", () => {
+        const val = it.textContent.trim().toLowerCase();
+        if (selectValueEl) selectValueEl.textContent = it.textContent.trim();
+        elementToggleFunc(select);
+        filterFunc(val);
+      })
+    );
   }
-  if (selectList) {
-    selectList.innerHTML = techFilters
-      .map((t) => `<li class="select-item"><button data-select-item>${t}</button></li>`)
-      .join("");
-  }
-  if (selectValueEl) selectValueEl.textContent = "Select category";
-
-  // Reconecta handlers agora que recriamos a UI de filtros
-  const newFilterBtns = document.querySelectorAll(".portfolio [data-filter-btn]");
-  let lastBtn = newFilterBtns[0];
-  newFilterBtns.forEach((btn) =>
-    btn.addEventListener("click", () => {
-      const val = btn.textContent.trim().toLowerCase();   // <= lowercase aqui
-      if (selectValueEl) selectValueEl.textContent = btn.textContent.trim();
-      filterFunc(val);                                     // <= passa normalizado (com alias dentro)
-      lastBtn?.classList.remove("active");
-      btn.classList.add("active");
-      lastBtn = btn;
-    })
-  );
-
-
-  const newSelectItems = document.querySelectorAll(".portfolio [data-select-item]");
-  newSelectItems.forEach((it) =>
-    it.addEventListener("click", () => {
-      const val = it.textContent.trim().toLowerCase();     // <= lowercase aqui
-      if (selectValueEl) selectValueEl.textContent = it.textContent.trim();
-      elementToggleFunc(select);
-      filterFunc(val);                                     // <= passa normalizado
-    })
-  );
 
 
   // 2) Busca e renderiza
