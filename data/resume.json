@@ -1,0 +1,21 @@
+{
+  "education": [
+    {
+      "institution": "Universidade X",
+      "area": "Sistemas de Informação",
+      "studyType": "Bacharelado",
+      "startDate": "2017-02",
+      "endDate": "2021-12",
+      "summary": "Ênfase em engenharia de software e dados."
+    }
+  ],
+  "experience": [
+    {
+      "company": "Empresa Y",
+      "position": "Desenvolvedor Full-Stack",
+      "startDate": "2022-01",
+      "endDate": null,
+      "summary": "Node.js, React, SQL Server e integrações Protheus/TOTVS."
+    }
+  ]
+}

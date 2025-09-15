@@ -57,16 +57,18 @@ for (let i = 0; i < selectItems.length; i++) {
 }
 
 // filtro DINÂMICO (reconsulta os itens sempre que usar)
+const filterItems = document.querySelectorAll("[data-filter-item]");
 const filterFunc = function (selectedValue) {
-  const items = document.querySelectorAll("[data-filter-item]");
-  items.forEach((el) => {
-    const cats = (el.dataset.category || "").split("|"); // suporta várias tags
-    if (selectedValue === "all" || cats.includes(selectedValue)) {
-      el.classList.add("active");
+  for (let i = 0; i < filterItems.length; i++) {
+    const cats = (filterItems[i].dataset.category || "").split("|"); // suporte multi-tag
+    if (selectedValue === "all") {
+      filterItems[i].classList.add("active");
+    } else if (cats.includes(selectedValue)) {
+      filterItems[i].classList.add("active");
     } else {
-      el.classList.remove("active");
+      filterItems[i].classList.remove("active");
     }
-  });
+  }
 };
 
 // botões de filtro grandes (do tema)
@@ -178,20 +180,11 @@ for (let i = 0; i < navigationLinks.length; i++) {
 (function initPortfolio() {
   const PROJECTS_JSON_URL = `./projects.json?v=${Date.now()}`; // cache-busting
   const techFilters = [
-  "All",
-  "JS",
-  "NodeJS",
-  "TypeScript",
-  "Python",
-  "HTML/CSS",
-  "PBI",
-  "SQL",
-  "Java",
-  "C#",
-  "C++",
-  "Shell"
-];
+    "All","JS","NodeJS","TypeScript","Python","HTML/CSS","PBI","SQL","Java","C#","C++","Shell","PowerBI"
+  ];
 
+  // abrir DIRETO a pasta do projeto no GitHub
+  const GITHUB_TREE_BASE = "https://github.com/magalps/magalps.github.io/tree/main/";
 
   // Placeholder em SVG inline (evita 404)
   const PLACEHOLDER =
@@ -207,13 +200,25 @@ for (let i = 0; i < navigationLinks.length; i++) {
       </svg>`
     );
 
+  // utils
+  const clamp = (txt, n = 160) => {
+    const t = (txt || "").trim();
+    return t.length > n ? t.slice(0, n - 1) + "…" : t;
+  };
+  const escapeHtml = (s) =>
+    String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
   // Contêineres do tema
   const filterList = document.querySelector(".portfolio .filter-list");
   const selectList = document.querySelector(".portfolio .select-list");
   const selectValueEl = document.querySelector(".portfolio [data-selecct-value]");
   const projectList = document.querySelector(".portfolio .project-list");
 
-  if (!projectList) return; // página não encontrada/alterada
+  if (!projectList) return;
 
   // 1) Monta UI dos filtros (substitui existentes)
   if (filterList) {
@@ -237,7 +242,7 @@ for (let i = 0; i < navigationLinks.length; i++) {
     btn.addEventListener("click", () => {
       const val = btn.textContent.trim().toLowerCase();
       if (selectValueEl) selectValueEl.textContent = btn.textContent.trim();
-      filterFunc(val);
+      filterFunc(val); // usa a sua filterFunc global que faz split("|")
       lastBtn?.classList.remove("active");
       btn.classList.add("active");
       lastBtn = btn;
@@ -272,43 +277,44 @@ for (let i = 0; i < navigationLinks.length; i++) {
 
       // cria cada card
       for (const p of items) {
-        const meta = p.meta || {};
-        const title = meta.title || p.dir?.split("/").slice(-1)[0] || "Projeto";
-        const img = meta.imageUrl || "";
-        const progress = typeof meta.progress === "number" ? meta.progress : null;
-        const tags = Array.isArray(p.tags) && p.tags.length ? p.tags : ["Outros"];
+        const meta      = p.meta || {};
+        const title     = meta.title || p.dir?.split("/").slice(-1)[0] || "Projeto";
+        const img       = meta.imageUrl || "";
+        const desc      = clamp(meta.description, 160);
+        const progress  = typeof meta.progress === "number" ? Math.max(0, Math.min(100, Math.round(meta.progress))) : null;
+        const tags      = Array.isArray(p.tags) && p.tags.length ? p.tags : ["Outros"];
 
         // dataset-category suporta múltiplas tags (lowercase, separadas por |)
-        const dataCategory = tags.map((t) => t.toLowerCase()).join("|");
+        const dataCategory = tags.map((t) => String(t).toLowerCase()).join("|");
 
-        // badges
-        const warn = !img || progress === null;
-        const progressBadge = progress !== null
-          ? `<span class="project-category" title="Progresso">${progress}%</span>`
-          : `<span class="project-category" title="Sem progresso">—</span>`;
-        const warnBadge = warn ? `<span class="project-category" title="Metadados incompletos">⚠️</span>` : "";
+        // barra de progresso (se houver)
+        const progressUI = progress == null ? "" : `
+          <div style="display:flex;align-items:center;gap:8px;margin:8px 10px 0 10px;">
+            <div style="flex:1;height:6px;border-radius:999px;background:#1f2937;overflow:hidden;">
+              <div style="width:${progress}%;height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+            </div>
+            <span class="project-category" style="white-space:nowrap;">${progress}%</span>
+          </div>`;
 
-        // link do projeto — tenta README se existir, senão pasta
-        const linkHref = p.readmePath
-          ? `./${encodeURI(p.readmePath)}`
-          : `./${encodeURI(p.dir || "")}`;
+        // link do projeto — vai pra pasta no GitHub (tree)
+        const href = p.dir ? (GITHUB_TREE_BASE + encodeURI(p.dir)) : "#";
 
         const li = document.createElement("li");
         li.className = "project-item active";
         li.setAttribute("data-filter-item", "");
         li.setAttribute("data-category", dataCategory);
         li.innerHTML = `
-          <a href="${linkHref}" target="_blank" rel="noreferrer">
-            <figure class="project-img">
+          <a href="${href}" target="_blank" rel="noreferrer">
+            <figure class="project-img" style="height:200px;overflow:hidden;background:#0f172a;display:flex;align-items:center;justify-content:center;">
               <div class="project-item-icon-box"><ion-icon name="eye-outline"></ion-icon></div>
               <img src="${img || PLACEHOLDER}" alt="${escapeHtml(title)}" loading="lazy"
+                   style="width:100%;height:100%;object-fit:contain;object-position:center;display:block;"
                    onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
             </figure>
             <h3 class="project-title">${escapeHtml(title)}</h3>
-            <p class="project-category">${escapeHtml(tags.join(" • "))}</p>
-            <div style="display:flex;gap:8px;margin:8px 10px 0 10px;">
-              ${progressBadge}${warnBadge}
-            </div>
+            <p class="project-category" style="margin-top:4px;">${escapeHtml(tags.join(" • "))}</p>
+            <p class="project-category" style="margin:6px 10px 0 10px;color:var(--light-gray);">${escapeHtml(desc)}</p>
+            ${progressUI}
           </a>
         `;
         projectList.appendChild(li);
@@ -343,12 +349,5 @@ for (let i = 0; i < navigationLinks.length; i++) {
       ul.appendChild(msg);
     }
   }
-
-  function escapeHtml(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
 })();
+
