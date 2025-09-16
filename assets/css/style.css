@@ -1903,3 +1903,30 @@ textarea.form-input::-webkit-resizer { display: none; }
   .timeline-text { max-width: 700px; }
 
 }
+
+.cert-item img {
+  width: 100%;
+  height: auto;
+  max-height: 64px;        /* evita logos gigantes */
+  object-fit: contain;
+  filter: grayscale(0);     /* mude para 1 se quiser todos em pb */
+}
+
+.cert-caption {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--light-gray);
+  display: flex;
+  gap: .25rem;
+  flex-wrap: wrap;
+  line-height: 1.2;
+}
+
+.cert-caption .cert-title {
+  color: var(--white-2);
+  font-weight: 600;
+}
+
+.cert-caption .cert-meta {
+  opacity: .8;
+}

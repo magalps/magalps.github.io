@@ -32,5 +32,21 @@
       "endDate": null,
       "summary": "Dashboards em Power BI, ETL e análises ad-hoc em SQL/Python."
     }
+  ],
+  "certificates": [
+    {
+      "name": "Power BI Analyst",
+      "issuer": "DIO",
+      "date": "2024-07-15",
+      "icon": "https://assets.dio.me/YuQx1V1Y92HlWiPlcEsqosnno_kbFe0q4U-IsHqvwJY/f:webp/h:120/q:80/L3RyYWNrcy85Mzg4ZThkOC0wMGQ1LTQwMDctYTdjOS0zNTczMjRmZTczZmEucG5n",
+      "url": "https://assets.dio.me/YuQx1V1Y92HlWiPlcEsqosnno_kbFe0q4U-IsHqvwJY/f:webp/h:120/q:80/L3RyYWNrcy85Mzg4ZThkOC0wMGQ1LTQwMDctYTdjOS0zNTczMjRmZTczZmEucG5n"
+    },
+    {
+      "name": "Python Data Analytics",
+      "issuer": "Squadio",
+      "date": "2024-04-10",
+      "icon": "https://assets.dio.me/YuQx1V1Y92HlWiPlcEsqosnno_kbFe0q4U-IsHqvwJY/f:webp/h:120/q:80/L3RyYWNrcy85Mzg4ZThkOC0wMGQ1LTQwMDctYTdjOS0zNTczMjRmZTczZmEucG5n",
+      "url": "https://assets.dio.me/YuQx1V1Y92HlWiPlcEsqosnno_kbFe0q4U-IsHqvwJY/f:webp/h:120/q:80/L3RyYWNrcy85Mzg4ZThkOC0wMGQ1LTQwMDctYTdjOS0zNTczMjRmZTczZmEucG5n"
+    }
   ]
 }

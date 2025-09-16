@@ -267,6 +267,46 @@ for (let i = 0; i < navigationLinks.length; i++) {
         </li>
       `).join('');
     }
+    // ===== Certificates =====
+    const certListEl = document.getElementById('certificates-list');
+    if (certListEl && Array.isArray(data.certificates) && data.certificates.length) {
+      // placeholder SVG para quando não houver ícone
+      const CERT_PLACEHOLDER =
+        'data:image/svg+xml;utf8,' + encodeURIComponent(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="60" viewBox="0 0 100 60">
+            <rect width="100" height="60" rx="8" fill="#111"/>
+            <g fill="#ffc857" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+              <text x="50" y="35" font-size="12">CERT</text>
+            </g>
+          </svg>`
+        );
+
+      const esc = (s) => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+      // ordene por data desc (opcional)
+      const items = [...data.certificates].sort((a,b) => String(b.date).localeCompare(String(a.date)));
+
+      certListEl.innerHTML = items.map(c => {
+        const icon = c.icon || CERT_PLACEHOLDER;
+        const title = c.name || 'Certificado';
+        const issuer = c.issuer ? ` • ${c.issuer}` : '';
+        const when = c.date ? ` — ${String(c.date).slice(0,10)}` : '';
+        const body = `<span class="cert-title">${esc(title)}</span><span class="cert-meta">${esc(issuer + when)}</span>`;
+
+        // Se tem URL, vira link; senão, só imagem/legenda
+        const cardInner = c.url
+          ? `<a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">
+              <img src="${esc(icon)}" alt="${esc(title)}" loading="lazy">
+              <div class="cert-caption">${body}</div>
+            </a>`
+          : `<div class="cert-card">
+              <img src="${esc(icon)}" alt="${esc(title)}" loading="lazy">
+              <div class="cert-caption">${body}</div>
+            </div>`;
+
+        return `<li class="clients-item cert-item">${cardInner}</li>`;
+      }).join('');
+    }
   } catch (e) {
     console.warn('[resume] falha ao carregar data/resume.json:', e);
     // Sem panic — o conteúdo estático do tema permanece.
