@@ -71,6 +71,7 @@ const FILTER_ALIASES = {
   // python
   "py": "python",
   "python": "python",
+  "ipynb": "python",
 
   // html / css
   "html": "html/css",
