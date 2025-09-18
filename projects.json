@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2025-09-15T18:17:10.409Z",
+  "generatedAt": "2025-09-17T22:54:30.057Z",
   "repoLanguages": {
-    "Python": 90.2,
-    "HTML": 6.4,
+    "Python": 90.4,
+    "HTML": 6.2,
     "JavaScript": 2.7,
     "CSS": 0.6,
     "TypeScript": 0.2
   },
   "projects": [
     {
-      "dir": "Projetos/Alura/7DaysOfCode/Lógica JS",
-      "readmePath": "Projetos/Alura/7DaysOfCode/Lógica JS/README.md",
+      "dir": "Projetos/Alura/7DaysOfCode/Logica JS",
+      "readmePath": "Projetos/Alura/7DaysOfCode/Logica JS/README.md",
       "meta": {
         "title": "Lógica com Javascript",
         "description": "7 desafios independentes para quem está começando na programação",
@@ -77,8 +77,8 @@
       ]
     },
     {
-      "dir": "Projetos/dio.me/Formação Lógica de Programação",
-      "readmePath": "Projetos/dio.me/Formação Lógica de Programação/README.md",
+      "dir": "Projetos/dio.me/Formacao Logica de Programacao",
+      "readmePath": "Projetos/dio.me/Formacao Logica de Programacao/README.md",
       "meta": {
         "title": "Formação Lógica de Programação",
         "description": "Domine os fundamentos da programação com clareza. Aprenda a trabalhar com variáveis para armazenar informações, dominar laços de repetição para otimizar fluxos, criar funções para organizar seu código e explorar o conceito de objetos para criar estrutura de dados mais complexas. Desenvolva sua base sólida para se aventurar no mundo da programação com confiança antes de aprender qualquer linguagem.",
@@ -90,8 +90,8 @@
       ]
     },
     {
-      "dir": "Projetos/dio.me/Formação SQL Database Specialist",
-      "readmePath": "Projetos/dio.me/Formação SQL Database Specialist/README.md",
+      "dir": "Projetos/dio.me/Formacao SQL Database Specialist",
+      "readmePath": "Projetos/dio.me/Formacao SQL Database Specialist/README.md",
       "meta": {
         "title": "Formação SQL Database Specialist",
         "description": "Desenvolva suas habilidades com banco de dados, aprenda como modelar uma base de dados de acordo com necessidades de negócios, aprenda a trabalhar com comandos Data Manipulation Language (DML) e Data Definition Language (DDL) para consultar e manipular seus dados. Crie projetos de soluções baseadas nas boas práticas das regras formais e explore técnicas de Recuperação e Controle de Concorrência em Banco de dados.",
@@ -103,8 +103,8 @@
       ]
     },
     {
-      "dir": "Projetos/dio.me/iFood - Programação do Zero",
-      "readmePath": "Projetos/dio.me/iFood - Programação do Zero/README.md",
+      "dir": "Projetos/dio.me/iFood - Programacao do Zero",
+      "readmePath": "Projetos/dio.me/iFood - Programacao do Zero/README.md",
       "meta": {
         "title": "Potência Tech iFood - Programação do Zero",
         "description": "A porta de entrada para diversas oportunidades de carreira no campo da tecnologia. Abra caminhos para um futuro promissor com o Bootcamp Potência Tech iFood!",
@@ -137,6 +137,19 @@
         "description": "Sejam muito bem-vindos(as) ao Santander Bootcamp 2023! Comece agora mesmo sua jornada na trilha de Fullstack Java + Angular, acompanhando as aulas, realizando desafios práticos e concluindo todas as atividades.",
         "imageUrl": "https://assets.dio.me/NF1ax9yHzwtyr8IpQ8z7qZg-CP4ddP0pf8TCoZTiF90/f:webp/h:120/q:80/L3RyYWNrcy9hZmViZTVlZC0yYjE4LTQzOGEtOTViMC0yYzk3MWU5YWVmZjkucG5n",
         "progress": 39
+      },
+      "tags": [
+        "Python"
+      ]
+    },
+    {
+      "dir": "Projetos/Hashtag Programacao",
+      "readmePath": "Projetos/Hashtag Programacao/README.md",
+      "meta": {
+        "title": "Python Power Up",
+        "description": "Programação do Evento: dia 1 - Python PowerUp - Automação de Tarefas - Utilização de Pyautogui (permite a utitlização do ) - Criação de Bots - Economizar horas de trabalho - RPA e Web-Scraping",
+        "imageUrl": "https://www.hashtagtreinamentos.com/wp-content/themes/hashtag/desenvolvimento_hashtag/assets/imgs/Global/logo-hashtag.webp",
+        "progress": 25
       },
       "tags": [
         "Python"
