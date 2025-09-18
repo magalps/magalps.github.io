@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-09-17T22:54:30.057Z",
+  "generatedAt": "2025-09-18T00:17:22.712Z",
   "repoLanguages": {
     "Python": 90.4,
     "HTML": 6.2,
@@ -147,7 +147,7 @@
       "readmePath": "Projetos/Hashtag Programacao/README.md",
       "meta": {
         "title": "Python Power Up",
-        "description": "Programação do Evento: dia 1 - Python PowerUp - Automação de Tarefas - Utilização de Pyautogui (permite a utitlização do ) - Criação de Bots - Economizar horas de trabalho - RPA e Web-Scraping",
+        "description": "Programação do Evento: dia 1 - Python PowerUp - Automação de Tarefas - Utilização de Pyautogui (permite a utitlização do mouse e teclado) - Criação de Bots - Economizar horas de trabalho - RPA e Web-Scraping",
         "imageUrl": "https://www.hashtagtreinamentos.com/wp-content/themes/hashtag/desenvolvimento_hashtag/assets/imgs/Global/logo-hashtag.webp",
         "progress": 25
       },
