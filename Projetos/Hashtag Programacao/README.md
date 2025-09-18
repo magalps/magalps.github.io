@@ -4,12 +4,12 @@
 
 Programação do Evento:
 dia 1 - Python PowerUp
-- Automação de Tarefas - Utilização de Pyautogui (permite a utitlização do )
+- Automação de Tarefas - Utilização de Pyautogui (permite a utitlização do mouse e teclado)
 - Criação de Bots
 - Economizar horas de trabalho
 - RPA e Web-Scraping
 
-Dia 2 - Python Insights
+Dia 2 - Python Insights - utilizando jupiter (.ipynb)
 - Análise e Tratamentos de Dados
 - Tabelas (DataFrames)
 - Gráficos em Python
