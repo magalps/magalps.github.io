@@ -8,9 +8,13 @@
 # streamlit - frontend e backend
 
 import streamlit as st
+import os
+from dotenv import load_dotenv
 from openai import OpenAI
 
-modelo = OpenAI(api_key="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")
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+modelo = OpenAI(api_key=api_key)
 
 st.write("### ChatBot com IA") # markdown
 
