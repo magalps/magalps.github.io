@@ -19,7 +19,7 @@
 # aqui vamos usar dicionarios para enviar as mensagens que é dicionario = {chave: valor, chave2: valor2}
 #role = quem enviou a mensagem = "função" (sistema), "usuário" (user) ou "assistente" (assistant)
 # content = conteudo da mensagem
-#mensagem = {"role": "user", "content": "Olá, IA!"}
+#mensagem = {"role": "user", "content": "Olá, IA!"} 
 
 
 import streamlit as st
