@@ -1,7 +1,7 @@
 #Regra de ouro, anotar em português o que você quer fazer
 
 #Obs.: caso não tenha o pyautogui instalado, rode o comando abaixo no terminal:
-#pip install pyautogui
+#pip install pyautogui pandas os
 
 """
 Vamos fazer um sistema que cadastre produtos em um sistema web
