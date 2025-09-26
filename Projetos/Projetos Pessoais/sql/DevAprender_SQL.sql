@@ -121,12 +121,11 @@ verificar no banco de dados quais pessoas tem filhos
 Exercicio 3
 1 - A equipe de produtos precisa do nome de todas as peças que pesam mais que 500kg mas não mais que 700kg
 2 - A equipe de Marketing pediu a relação de todos os empregados (employess) que são casados (married) e são asalariados (salaried)
-3 - Um usuário chamado Peter Krebs está devendo um pagamento, consiga o email dele para que possamos enviar uma cobrança (use a tabela person.person e depois person.email address)
-Obs.:	é muito comum utilizar o inglês para titulo das colunas e nomes das tabelas, então o inglês de nivel técnico é muito importante
+Obs.:	É muito comum utilizar o inglês para titulo das colunas e nomes das tabelas, então o inglês de nivel técnico é muito importante
 		Coloquei a tradução, porém, como dito anteriormente não é comum quem fez a solicitação passar esse nivel de detalhamento.
 */
 -- 1
-SELECT Name
+SELECT *
 FROM Production.Product
 WHERE Weight > 500 and Weight<= 700
 
@@ -135,11 +134,30 @@ SELECT *
 FROM HumanResources.Employee
 WHERE MaritalStatus = 'M' and SalariedFlag = 1
 
---3 Nesse caso poderiamos utilizar o INNER JOIN mas vou deixar sem ele neste momento já que ainda não foi apresentando. Então vamos pegar o BusinessEntityID no person.person e com o código vamos pegar o e-mail no person.emailaddress
-SELECT *
-FROM PERSON.Person
-WHERE FirstName = 'Peter' and LastName = 'Krebs'
+/*
+COUNT
+Serve para contar alguma informação
+SELECT COUNT(coluna1)
+FROM TABELA
+*/
+SELECT COUNT(*)
+FROM Person.Person
 
-SELECT *
-FROM person.EmailAddress
-WHERE BusinessEntityID = 26
+SELECT COUNT(Title)
+FROM Person.Person
+
+SELECT COUNT(DISTINCT Title)
+FROM Person.Person
+
+/*
+EXERCICIO 4
+1 - eu quero saber quantos produtos temos cadastrados em nossa tabela de produtos
+2 - eu quero saber quantos tamanhos de produtos temos em nossas tabela
+3 - eu quero saber quantos tamanhos diferentes de produtos eu tenho cadastra em nossa tabela
+*/
+--1
+SELECT COUNT(*) AS produtos
+FROM Production.Product
+
+--2
+
