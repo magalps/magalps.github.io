@@ -160,4 +160,31 @@ SELECT COUNT(*) AS produtos
 FROM Production.Product
 
 --2
+SELECT COUNT(size) AS tamanho
+FROM Production.Product
 
+--3
+SELECT COUNT(DISTINCT size) AS tamanhos_unicos
+FROM Production.Product
+
+/*
+TOP
+Ele serve para limitar a quantidade de linhas que vai retornar, é muito interessante para verificar a estrutura da tabela
+
+SELECT TOP 10 coluna1
+FROM tabela
+*/
+SELECT TOP 100 *
+FROM person.Person
+
+/*
+ORDER BY
+serve para ordenar a coluna por ordem crescente ou decrescente
+
+SELECT coluna1, coluna2
+FROM tabela
+ORDER BY coluna1 asc/desc
+*/
+SELECT *
+FROM Person.Person
+ORDER BY FirstName asc, LastName desc
