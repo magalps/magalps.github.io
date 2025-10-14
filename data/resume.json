@@ -1,36 +1,65 @@
 {
   "education": [
     {
-      "institution": "Universidade X",
+      "institution": "Universidade Federal de Goiás",
       "studyType": "Bacharelado",
-      "area": "Ciência da Computação",
-      "startDate": "2016-02-01",
-      "endDate": "2020-12-15",
-      "summary": "Ênfase em estruturas de dados, bancos de dados e desenvolvimento web."
+      "area": "Engenharia de Computação",
+      "startDate": "2013-02-01",
+      "endDate": "2021-12-15",
+      "summary": "Ênfase em estruturas de dados, bancos de dados e infra."
     },
     {
-      "institution": "Alura",
-      "studyType": "Formação",
-      "area": "JavaScript/Node.js",
-      "startDate": "2023-03-01",
-      "endDate": "2023-09-30",
-      "summary": "Projetos práticos com APIs REST e testes."
+      "institution": "Faculdade Anhanguera",
+      "studyType": "Pós-graduação",
+      "area": "Business intelligence, big data e analytics - ciência de dados",
+      "startDate": "2025-09-01",
+      "endDate": "2026-03-30",
+      "summary": "Arquitetura de data warehouse,ETL modelagem dimensional, ferramentas de BI, mineração de dados, estatística aplicada, análise preditiva, visualização de dados, governança de dados, qualidade de dados, segurança da informação, Python para ciência de dados, R para ciência de dados, SQL avançado"
+
     }
   ],
   "experience": [
     {
-      "company": "Empresa Y",
-      "position": "Desenvolvedor Back-end",
-      "startDate": "2021-01-10",
-      "endDate": "2023-08-31",
-      "summary": "Criação de APIs Node.js, integrações com serviços externos e automação de rotinas."
-    },
-    {
       "company": "Freelancer",
       "position": "Data Analyst",
-      "startDate": "2023-09-01",
+      "startDate": "2025-05-01",
       "endDate": null,
       "summary": "Dashboards em Power BI, ETL e análises ad-hoc em SQL/Python."
+    },
+    {
+      "company": "Bradel Distribuição",
+      "position": "Gerente de Produtos e Inovação",
+      "startDate": "2021-09-01",
+      "endDate": "2025-04-30",
+      "summary": "Responsável por compras, marketing, treinamentos, importações, manutenção e criação de dashboards/relatórios. Forte atuação na gestão de estoques, com foco em maximização do giro e redução de produtos de baixo desempenho. Responsável pelo planejamento estratégico de compras e vendas. Análise de dados por meio do protheus e seu banco em SQL Server, Excel e Power BI."
+    },
+    {
+      "company": "Bradel Distribuição",
+      "position": "Supervisor Técnico Comercial",
+      "startDate": "2019-08-01",
+      "endDate": "2021-08-31",
+      "summary": "Responsável pelo suporte a clientes, desenvolvimento de projetos, dimensionamento de equipamentos e gestão de compras, estoque e importações. Gerenciamento de vendas, concessão de descontos e treinamento de equipes, garantindo a satisfação dos clientes e a otimização do fluxo de trabalho."
+    },
+    {
+      "company": "Bradel Distribuição",
+      "position": "Analista Técnico Comercial",
+      "startDate": "2018-01-02",
+      "endDate": "2019-07-31",
+      "summary": "Responsável pelo suporte técnico e comercial, desenvolvimento de projetos personalizados e recomendação de equipamentos. Atualização dos sistemas, realizar apresentações técnicas, esclarecer dúvidas e organizar reuniões e treinamentos para a equipe de vendas."
+    },
+    {
+      "company": "Bradel Distribuição",
+      "position": "Analista Técnico Comercial",
+      "startDate": "2018-01-02",
+      "endDate": "2019-07-31",
+      "summary": "Responsável pelo suporte técnico e comercial, desenvolvimento de projetos personalizados e recomendação de equipamentos. Atualização dos sistemas, realizar apresentações técnicas, esclarecer dúvidas e organizar reuniões e treinamentos para a equipe de vendas."
+    },
+    {
+      "company": "Bradel Distribuição",
+      "position": "Estagiário Técnico-Comercial",
+      "startDate": "2017-01-02",
+      "endDate": "2017-12-30",
+      "summary": "Administração de ambientes computacionais, configuração de redes e suporte a usuários. Experiência prática na implantação de rotinas, controle de níveis de serviço e documentação de processos. Habilidades em administração de servidores Linux e Windows, gerenciamento de banco de dados MySQL, configuração de Firewalls e gerenciamento de infraestrutura em Citrix XenCenter. Conhecimento em redes VLAN, roteamento e implementação de políticas de segurança com servidores antivírus. Focado em otimização de sistemas e melhoria contínua."
     }
   ],
   "certificates": [
