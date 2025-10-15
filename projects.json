@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2025-10-14T00:31:09.726Z",
+  "generatedAt": "2025-10-15T01:33:25.165Z",
   "repoLanguages": {
-    "SQL": 47.8,
-    "HTML": 30.4,
-    "Python": 20.6,
-    "JavaScript": 0.8,
-    "CSS": 0.3,
+    "SQL": 47.1,
+    "HTML": 31,
+    "Python": 20.3,
+    "JavaScript": 1,
+    "CSS": 0.6,
     "TypeScript": 0.1
   },
   "projects": [
@@ -137,7 +137,7 @@
         "title": "Santander Bootcamp 2023 - Fullstack Java+Angular",
         "description": "Sejam muito bem-vindos(as) ao Santander Bootcamp 2023! Comece agora mesmo sua jornada na trilha de Fullstack Java + Angular, acompanhando as aulas, realizando desafios práticos e concluindo todas as atividades.",
         "imageUrl": "https://assets.dio.me/NF1ax9yHzwtyr8IpQ8z7qZg-CP4ddP0pf8TCoZTiF90/f:webp/h:120/q:80/L3RyYWNrcy9hZmViZTVlZC0yYjE4LTQzOGEtOTViMC0yYzk3MWU5YWVmZjkucG5n",
-        "progress": 39
+        "progress": 69
       },
       "tags": [
         "Python"
