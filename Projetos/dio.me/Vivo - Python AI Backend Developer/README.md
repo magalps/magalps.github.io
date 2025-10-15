@@ -17,4 +17,4 @@ Desafio de Projeto: Construa o seu portfólio construindo projetos práticos com
 
 Ranking: Cada bootcamp possui um ranking com premiações exclusivas, onde você pontua de acordo com as interações que você realiza em Fórum e Rooms, dos acertos que você tem em questionários e da qualidade do código que você desenvolveu nos desafios.
 
-progress: 39%
+progress: 69%
