@@ -304,3 +304,62 @@ FROM Person.Address
 SELECT COUNT(*)
 FROM Production.Product
 WHERE ListPrice BETWEEN 500 and 1000 and Color  = 'red'
+
+/*
+Min Max Sum Avg
+*/
+SELECT TOP 10 SUM(UnitPrice) AS "SOMA"
+FROM Sales.SalesOrderDetail
+
+SELECT TOP 10 MIN(UnitPrice) AS "Menor Valor"
+FROM Sales.SalesOrderDetail
+
+SELECT TOP 10 MAX(UnitPrice) AS "Maior Valor"
+FROM Sales.SalesOrderDetail
+
+SELECT TOP 10 AVG(UnitPrice) AS "Média Valor"
+FROM Sales.SalesOrderDetail
+
+/*
+GROUP BY
+*/
+--Quantos nomes de cada nome temos cadastrado em nosso banco de dados
+SELECT FirstName, COUNT(FirstName) AS "CONTAGEM"
+FROM Person.Person
+GROUP BY FirstName
+
+--Na tabela production.product eu quero saber a média de preço para os produtos que são prata(silver)
+SELECT Color, AVG(ListPrice)
+FROM Production.Product
+WHERE Color = 'silver'
+GROUP BY Color
+
+/*
+EXERCICIO 7
+1 - Eu preciso saber quantas pessoas tem o mesmo MiddleName agrupadas por MiddleName
+2 - Eu preciso saber em média qual é a quantidade (quantity) que cada produto é vendido na loja
+3 - Eu quero saber qual foram as 10 vendas que no total tiveram os maiores valores de venda (line total) por produto do maior valor 
+para o menor
+4 - Eu preciso saber quantos produtos e qual a quantidade media de produtos temos cadastrados nas nossas ordem de serviços (WorkOrder), agrupados por productID
+*/
+
+--1
+SELECT MiddleName, COUNT(MiddleName)
+FROM Person.Person
+GROUP BY MiddleName
+
+SELECT ProductID, AVG(OrderQty)
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+
+SELECT TOP 10 ProductID, SUM(Linetotal) AS "TOTAL"
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+Order by TOTAL
+
+SELECT SUM(ProductID), AVG(OrderQty)
+FROM Production.WorkOrder
+GROUP BY ProductID
+
+select top 10 *
+from Production.WorkOrder
