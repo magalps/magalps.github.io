@@ -1,0 +1,5 @@
+Quero que você me ajude a criar um chatbot moderno. Como você constrói em React, gostaria que fizesse os códigos em JavaScript e não em TypeScript. Se não for possível, pelo menos escreva TypeScript como se fosse JavaScript.
+
+Esse chatbot deve estar integrado com a API do ChatGPT. Pra isso, me solicite a chave de API que te mando por aqui e você pluga no código. Enquanto você não tiver uma chave, use uma "fake".
+
+A base do visual do chatbot está na imagem que te mandei. Se conseguir deixar ele mais visual, moderno e chamativo, pode implementar as alterações. Não precisa ser exatamente igual ao que mandei.
