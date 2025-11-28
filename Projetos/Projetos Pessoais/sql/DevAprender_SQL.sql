@@ -363,3 +363,214 @@ GROUP BY ProductID
 
 select top 10 *
 from Production.WorkOrder
+
+/*
+HAVING
+É utilizado junto com o group by para filtrar resoltados de um agrupamento como se fosse um where para dados agrupados.
+
+ex.
+SELECT coluna1, funcaoAgregacao(coluna2)
+FROM nomeTabela
+GROUP BY coluna1
+HAVING condicao
+
+A grande diferença entre HAVING E WHERE
+é que o group by é aplicado depois que os dados já foram agrupados, enquanto o WHERE é aplicado antes dos dados serem agrupado
+*/
+
+SELECT FirstName, count(FirstName) as "quantidade"
+from Person.Person
+group by FirstName
+having count (firstname) > 10
+
+--por exemplo queremos saber quais produtos que no total de vendas estão entre 162k a 500k
+SELECT ProductID, SUM(LineTotal) as "total"
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+HAVING SUM(LineTotal) between 162000 and  500000
+
+--você quer saber quais nomes no sistema tem uma ocorrencia maior que 10 vezes, porem somente onde o título é 'Mr.'
+SELECT FirstName, count(FirstName) as "quantidade"
+from Person.Person
+where Title = 'Mr.'
+group by FirstName
+having count (firstname) > 10
+
+/*
+EXERCICIO 8
+1 - Estamos querendo identificar as provincias(stateProvinceId) com o maior numero de cadastros no nosso sistema, 
+então é preciso encontrar quais províncias estão registradas no banco de dados mais que 1000 vezes
+
+2 - Sendo que se trata de uma multinacional os gerentes querem saber quais produtos (productId) não estão trazendo
+em média no mínimo 1MM em total de vendas (lineTotal)
+*/
+SELECT StateProvinceID, COUNT(StateProvinceID) as "quantidade"
+FROM Person.Address
+GROUP BY StateProvinceID
+HAVING COUNT(StateProvinceID) > 1000
+
+SELECT ProductID, SUM(LineTotal) as "total"
+FROM Sales.SalesOrderDetail
+group by ProductID
+having SUM(LineTotal) > 1000000
+
+/*
+INNER JOIN
+
+O join utilizamos quando quero pegar infomrações de duas tabelas, por exemplo em uma tabela eu tenho o CPF com nome e
+e sobrenome em outra temos o cpf e o endereço, se eu quiser olhar as duas infomrmações utilizo o cpf como chave
+para pegar e trazer todas as informações das duas tabelas atreladas ao cpf, em tabelas pode ser o cód de um cliente
+e outras chaves, lembrando que as chaves podem ser 1x1, 1xN e NxN sempre preferir 1x1
+*/
+
+--businessentityId, FirstName, Lastname, EmailAddress
+-- gosto de utilizar o TOP 10 para verificar as informações e como estão funcionando e quais colunas tem em comum
+SELECT TOP 10 *
+FROM Person.Person
+
+SELECT TOP 10 *
+FROM person.EmailAddress
+
+--a coluna em comum é a BusinessEntityID
+SELECT p.BusinessEntityID,p.FirstName,p.LastName, pe.EmailAddress
+FROM person.Person as P
+INNER JOIN Person.EmailAddress PE on p.BusinessEntityID = pe.BusinessEntityID
+
+--Queremos os nomes dos produtos e as informações de suas subcategorias
+--ListPrice, Nome do produto e Nome da subcategoria
+SELECT TOP 10 *
+FROM Production.Product
+
+SELECT TOP 10 *
+FROM Production.ProductSubcategory
+
+SELECT pp.ListPrice, pp.Name, ps.ProductSubcategoryID
+FROM Production.Product as PP
+INNER JOIN Production.ProductSubcategory PS on pp.ProductSubcategoryID = ps.ProductSubcategoryID
+
+--digamos que quero todas as informações sem selecionar as colunas
+
+SELECT TOP 10 *
+FROM Person.BusinessEntityAddress
+
+SELECT TOP 10 *
+FROM person.Address
+
+SELECT *
+FROM PERSON.BusinessEntityAddress PB
+INNER JOIN person.Address pa on pb.AddressID = pa.AddressID
+
+--Quero o BusinessEntityID, Name, PhoneNumberTypeID, PhoneNumber
+SELECT top 10 *
+FROM PERSON.PhoneNumberType
+
+SELECT TOP 10 *
+FROM PERSON.PersonPhone
+
+SELECT pp.BusinessEntityID, pt.Name,pp.PhoneNumberTypeID, pp.PhoneNumber
+FROM person.PhoneNumberType pt
+INNER JOIN person.PersonPhone pp on pt.PhoneNumberTypeID = pp.PhoneNumberTypeID
+
+--Quero o AddressID, City, StateProvinceID, Nome do Estado
+SELECT TOP 10 *
+FROM Person.StateProvince
+
+SELECT TOP 10 *
+FROM Person.Address
+
+SELECT pa.AddressID, pa.City, pa.StateProvinceID, ps.Name
+FROM PERSON.StateProvince PS
+INNER JOIN Person.Address PA ON ps.StateProvinceID = pa.StateProvinceID
+
+/*
+UNION
+Combina dois ou mais resultados de um select em um resultado apenas.
+o UNION remove os dados duplicados, já o UNION ALL não remove os dados duplicados.
+
+Estrutura:
+SELECT coluna1, coluna2,
+FROM tabela1
+UNION
+SELECT coluna1, coluna2
+FROM tabela2
+*/
+
+SELECT [ProductID], [Name], [ProductNumber]
+FROM Production.Product
+WHERE Name like '%Chain%'
+UNION
+SELECT [ProductID], [Name], [ProductNumber]
+FROM Production.Product
+WHERE Name like '%Decal%'
+ORDER BY ProductID
+
+SELECT ProductID,Name,ProductNumber
+FROM Production.Product
+WHERE Name LIKE '%Chain%' or Name like'%Decal%'
+ORDER BY ProductID
+
+--encerramos com a tabela adventureworks agora vamos para a proxima etapa que é o banco de dados northwind
+/*
+Northwind
+É um banco de dados de exemplo que simula uma empresa de comércio internacional fictícia chamada Northwind Traders.
+Ele é amplamente utilizado para fins educacionais e de demonstração, especialmente em tutoriais e cursos relacionados a bancos de dados e SQL.
+O banco de dados Northwind inclui várias tabelas que representam diferentes aspectos do negócio, como clientes
+https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/databases/northwind-pubs/instnwnd.sql
+*/
+
+/*
+SELF JOIN
+
+ESTRUTURA
+SELECT NOME_COLUNA
+FROM TABELAA, TABELA B
+WHERE CONDICAO
+*/
+
+select A.ContactName, A.Region, B.ContactName, B.Region
+from Customers A, Customers B
+WHERE A.Region = B.Region
+
+--Eu quero encontrar (nome e data de contratação) de todos os funcionarios que foram contratados no mesmo ano.
+
+SELECT TOP 10 *
+FROM Employees
+
+SELECT A.FirstName, A.HireDate, B.LastName, B.HireDate
+FROM Employees A, Employees B
+WHERE DATEPART(YEAR,A.HireDate) = DATEPART(YEAR, B.HireDate)
+ORDER BY FirstName;
+
+/*
+DESAFIO
+Eu quero saber na tabela detalhe do pedido [Order Details] quais produtos tem o mesmo percentual de desconto
+*/
+
+SELECT A.productId, A.discount, B.productid, B.discount
+FROM [Order Details] A, [Order Details] B
+WHERE A.Discount = B.Discount
+
+/*
+SUBQUERY / SUBSELECT - AVANÇADO
+
+Monte um relatório para mim de todos os produtos cadastrados que tem preço de venda acima da média
+*/
+SELECT AVG(ListPrice)
+FROM Production.Product
+-- agora faria um outro select com o resultado do valor anteior
+SELECT *
+FROM Production.Product
+WHERE ListPrice > 438.66
+
+-- com o Subselect fica assim
+SELECT *
+FROM Production.Product
+WHERE ListPrice > (SELECT AVG(LISTPRICE) FROM Production.Product)
+
+-- Eu quero saber o nome dos meus funcionarios que tem o cargo de Design Engineer
+
+SELECT TOP 10 *
+FROM Person.Person
+
+SELECT TOP 10 *
+FROM HumanResources.Employee
