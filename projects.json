@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T01:49:02.750Z",
+  "generatedAt": "2026-08-03T02:25:26.150Z",
   "repoLanguages": {
     "SQL": 43.6,
     "HTML": 28.6,
@@ -141,6 +141,71 @@
       },
       "tags": [
         "Python"
+      ]
+    },
+    {
+      "dir": "Projetos/estudos-data-ia",
+      "readmePath": "Projetos/estudos-data-ia/README.md",
+      "meta": {
+        "title": "estudos-data-ia",
+        "description": "",
+        "imageUrl": "",
+        "progress": null
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/estudos-data-ia/01_sql",
+      "readmePath": "Projetos/estudos-data-ia/01_sql/README.md",
+      "meta": {
+        "title": "01_sql",
+        "description": "",
+        "imageUrl": "",
+        "progress": null
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/estudos-data-ia/02_power_bi",
+      "readmePath": "Projetos/estudos-data-ia/02_power_bi/README.md",
+      "meta": {
+        "title": "02_power_bi",
+        "description": "",
+        "imageUrl": "",
+        "progress": null
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/estudos-data-ia/03_data_warehouse",
+      "readmePath": "Projetos/estudos-data-ia/03_data_warehouse/README.md",
+      "meta": {
+        "title": "03_data_warehouse",
+        "description": "",
+        "imageUrl": "",
+        "progress": null
+      },
+      "tags": [
+        "HTML/CSS"
+      ]
+    },
+    {
+      "dir": "Projetos/estudos-data-ia/04_python_etl",
+      "readmePath": "Projetos/estudos-data-ia/04_python_etl/README.md",
+      "meta": {
+        "title": "04_python_etl",
+        "description": "",
+        "imageUrl": "",
+        "progress": null
+      },
+      "tags": [
+        "HTML/CSS"
       ]
     },
     {
