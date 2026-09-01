@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-03T02:25:26.150Z",
+  "generatedAt": "2026-09-01T00:33:16.267Z",
   "repoLanguages": {
-    "SQL": 43.6,
-    "HTML": 28.6,
-    "Python": 18.7,
-    "TypeScript": 7,
-    "JavaScript": 1.2,
-    "CSS": 0.9
+    "SQL": 52,
+    "HTML": 34,
+    "TypeScript": 8.3,
+    "Python": 3.1,
+    "JavaScript": 1.4,
+    "CSS": 1.1
   },
   "projects": [
     {
@@ -125,19 +125,6 @@
         "description": "Num mundo data-driven quem sabe manipular e apresentar dados comanda!",
         "imageUrl": "https://assets.dio.me/LD8fz8Qat_uVi20XxnO-02HYemLdoCmBZSx4LyUzMog/f:webp/h:120/q:80/L3RyYWNrcy8wMTM2NTE4Yy02OGQ2LTQxOTgtYmRiZS02ZDk4MmMzYTEyNjEucG5n",
         "progress": 51
-      },
-      "tags": [
-        "Python"
-      ]
-    },
-    {
-      "dir": "Projetos/dio.me/Vivo - Python AI Backend Developer",
-      "readmePath": "Projetos/dio.me/Vivo - Python AI Backend Developer/README.md",
-      "meta": {
-        "title": "Santander Bootcamp 2023 - Fullstack Java+Angular",
-        "description": "Sejam muito bem-vindos(as) ao Santander Bootcamp 2023! Comece agora mesmo sua jornada na trilha de Fullstack Java + Angular, acompanhando as aulas, realizando desafios práticos e concluindo todas as atividades.",
-        "imageUrl": "https://assets.dio.me/NF1ax9yHzwtyr8IpQ8z7qZg-CP4ddP0pf8TCoZTiF90/f:webp/h:120/q:80/L3RyYWNrcy9hZmViZTVlZC0yYjE4LTQzOGEtOTViMC0yYzk3MWU5YWVmZjkucG5n",
-        "progress": 69
       },
       "tags": [
         "Python"
